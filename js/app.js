@@ -52,25 +52,33 @@ function handleOrientation(event) {
     gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
     // --- Convert Euler angles to quaternion (Z-X-Y order) ---
-    const q = glMatrix.quat.create();
-    glMatrix.quat.fromEuler(q, betaSmoothed, gammaSmoothed, alphaSmoothed);
+    // const q = glMatrix.quat.create();
+    // glMatrix.quat.fromEuler(q, betaSmoothed, gammaSmoothed, alphaSmoothed);
 
-    // --- Rotate world gravity vector (0,0,-1) by quaternion ---
-    const gravity = glMatrix.vec3.fromValues(0, 0, -1);
-    const deviceGravity = glMatrix.vec3.create();
-    glMatrix.vec3.transformQuat(deviceGravity, gravity, q);
+    // // --- Rotate world gravity vector (0,0,-1) by quaternion ---
+    // const gravity = glMatrix.vec3.fromValues(0, 0, -1);
+    // const deviceGravity = glMatrix.vec3.create();
+    // glMatrix.vec3.transformQuat(deviceGravity, gravity, q);
 
-    // --- Project onto screen plane ---
-    const gx = deviceGravity[0]; // left/right
-    const gy = deviceGravity[1]; // up/down
+    // // --- Project onto screen plane ---
+    // const gx = deviceGravity[0]; // left/right
+    // const gy = deviceGravity[1]; // up/down
 
-    // --- Horizon angle ---
-    const angle = Math.atan2(gx, gy) * 180 / Math.PI;
+    // // --- Horizon angle ---
+    // const angle = Math.atan2(gx, gy) * 180 / Math.PI;
 
-    // --- Smooth angle with EWMA ---
-    // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
+    // // --- Smooth angle with EWMA ---
+    // // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
 
-    updateUI(angle);
+
+    let rotatedVector = rotateZXY([1, 0, 0], alphaSmoothed, betaSmoothed, gammaSmoothed);
+    
+    const angleRad = Math.atan2(v[2], Math.sqrt(v[0]*v[0] + v[1]*v[1]));
+    const angleDeg = angleRad * 180 / Math.PI;
+
+
+
+    updateUI(angleDeg);
 }
 
 
@@ -129,4 +137,34 @@ $(document).ready(function () {
   $("#debug-panel").toggle(this.checked);
 });
 });
+
+
+function deg2rad(d) { return d * Math.PI / 180; }
+
+function rotateZXY(v, alpha, beta, gamma) {
+  const a = deg2rad(alpha);
+  const b = deg2rad(beta);
+  const g = deg2rad(gamma);
+
+  const cA = Math.cos(a), sA = Math.sin(a);
+  const cB = Math.cos(b), sB = Math.sin(b);
+  const cG = Math.cos(g), sG = Math.sin(g);
+
+  // Z rotation
+  const x1 = cA*v[0] - sA*v[1];
+  const y1 = sA*v[0] + cA*v[1];
+  const z1 = v[2];
+
+  // X rotation
+  const x2 = x1;
+  const y2 = cB*y1 - sB*z1;
+  const z2 = sB*y1 + cB*z1;
+
+  // Y rotation
+  const x3 = cG*x2 + sG*z2;
+  const y3 = y2;
+  const z3 = -sG*x2 + cG*z2;
+
+  return [x3, y3, z3];
+}
 
