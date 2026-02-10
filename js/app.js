@@ -2,6 +2,10 @@
 let videoStream = null;
 let currentAngle = 0;
 
+let smoothedAngle = 0;
+const SMOOTHING = 0.15;
+
+
 // --- CAMERA ---
 
 async function startCamera() {
@@ -30,15 +34,21 @@ function stopCamera() {
 // --- ORIENTATION ---
 
 function handleOrientation(event) {
-  // beta: front-back tilt (-180, 180)
-  // gamma: left-right tilt (-90, 90)
-  const beta = event.beta;
-  const gamma = event.gamma;
+  const beta = event.beta;   // front-back
+  const gamma = event.gamma; // left-right
 
-  // Use gamma for horizontal leveling
-  currentAngle = event.beta;
+  if (beta === null || gamma === null) return;
 
-  updateUI();
+  // Compute stable horizon angle
+  let rawAngle =
+    Math.atan2(gamma, beta) * (180 / Math.PI);
+
+  // Exponential smoothing
+  smoothedAngle =
+    SMOOTHING * rawAngle +
+    (1 - SMOOTHING) * smoothedAngle;
+
+  updateUI(smoothedAngle);
 }
 
 function updateUI() {
