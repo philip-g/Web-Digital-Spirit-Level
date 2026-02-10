@@ -40,7 +40,7 @@ function handleOrientation(event) {
 
   if (alpha === null || beta === null || gamma === null) return;
 
-  // --- DEBUG ---
+  // DEBUG
   $("#alpha").text(alpha.toFixed(1));
   $("#beta").text(beta.toFixed(1));
   $("#gamma").text(gamma.toFixed(1));
@@ -49,30 +49,18 @@ function handleOrientation(event) {
     betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
     gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
-//   // --- Convert to radians ---
-  const betaRad  = betaSmoothed  * Math.PI / 180;
-  const gammaRad = gammaSmoothed * Math.PI / 180;
+    // Convert to radians
+    const betaRad  = betaSmoothed  * Math.PI / 180;
+    const gammaRad = gammaSmoothed * Math.PI / 180;
 
-//   // --- Compute screen-space gravity vector ---
-  const x = -Math.sin(betaRad);
-  const y = Math.sin(gammaRad) * Math.cos(betaRad);
-
-    // Compute the tilt vector
-    // screenX = gamma
-    // screenY = beta
-    // const x = Math.sin(gammaRad);
-    // const y = -Math.sin(betaRad);
+    // Compute screen-space gravity vector
+    const x = -Math.sin(betaRad);
+    const y = Math.sin(gammaRad) * Math.cos(betaRad);
 
     // Angle of the horizon line
     let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
 
-    // // --- Horizon angle in degrees ---
-    // let horizonAngle = Math.atan2(gx, gy) * 180 / Math.PI;
-
-//   // --- Smooth the angle ---
-//   smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
-
-  updateUI(horizonAngle);
+  updateUI(gammaSmoothed);
 }
 
 
