@@ -1,11 +1,10 @@
 
 let videoStream = null;
-let currentAngle = 0;
 
 // Smoothed gravity vector
 let gBeta = 0;
 let gGamma = 0;
-const SMOOTHING = 1; // 0.05 = very stable, 0.2 = more responsive
+const SMOOTHING = 1; // 0.1 = very stable, 0.8 = more responsive
 
 // --- CAMERA ---
 
@@ -39,22 +38,28 @@ function handleOrientation(event) {
   const beta  = event.beta;
   const gamma = event.gamma;
 
-  if (beta === null || gamma === null) return;
+  if (alpha === null || beta === null || gamma === null) return;
 
-  // --- DEBUG DISPLAY ---
-  $("#alpha").text(alpha?.toFixed(1) ?? "–");
+  // --- DEBUG ---
+  $("#alpha").text(alpha.toFixed(1));
   $("#beta").text(beta.toFixed(1));
   $("#gamma").text(gamma.toFixed(1));
 
-  // --- SMOOTH THE GRAVITY VECTOR ---
-  gBeta  = SMOOTHING * beta  + (1 - SMOOTHING) * gBeta;
-  gGamma = SMOOTHING * gamma + (1 - SMOOTHING) * gGamma;
+  // --- Convert to radians ---
+  const betaRad  = beta  * Math.PI / 180;
+  const gammaRad = gamma * Math.PI / 180;
 
-  // --- COMPUTE PERFECTLY CONTINUOUS HORIZON ANGLE ---
-  const angle =
-    Math.atan2(gGamma, gBeta) * (180 / Math.PI);
+  // --- Compute screen-space gravity vector ---
+  const gx = -Math.sin(betaRad);
+  const gy = Math.sin(gammaRad) * Math.cos(betaRad);
 
-  updateUI(angle);
+  // --- Horizon angle in degrees ---
+  let horizonAngle = Math.atan2(gx, gy) * 180 / Math.PI;
+
+  // --- Smooth the angle ---
+  smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
+
+  updateUI(smoothedAngle);
 }
 
 
