@@ -54,14 +54,14 @@ function handleOrientation(event) {
   const gammaRad = gammaSmoothed * Math.PI / 180;
 
 //   // --- Compute screen-space gravity vector ---
-//   const gx = -Math.sin(betaRad);
-//   const gy = Math.sin(gammaRad) * Math.cos(betaRad);
+  const x = -Math.sin(betaRad);
+  const y = Math.sin(gammaRad) * Math.cos(betaRad);
 
     // Compute the tilt vector
     // screenX = gamma
     // screenY = beta
-    const x = Math.sin(gammaRad);
-    const y = -Math.sin(betaRad);
+    // const x = Math.sin(gammaRad);
+    // const y = -Math.sin(betaRad);
 
     // Angle of the horizon line
     let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
