@@ -5,7 +5,7 @@ let currentAngle = 0;
 // Smoothed gravity vector
 let gBeta = 0;
 let gGamma = 0;
-const SMOOTHING = 0.1; // 0.05 = very stable, 0.2 = more responsive
+const SMOOTHING = 1; // 0.05 = very stable, 0.2 = more responsive
 
 // --- CAMERA ---
 
