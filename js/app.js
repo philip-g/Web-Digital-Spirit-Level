@@ -5,7 +5,7 @@ let videoStream = null;
 let alphaSmoothed = 0;
 let betaSmoothed = 0;
 let gammaSmoothed = 0;
-const SMOOTHING = 0.9; // 0.1 = very stable, 0.8 = more responsive
+const SMOOTHING = 0.2; // 0.1 = very stable, 0.8 = more responsive
 
 // --- CAMERA ---
 
