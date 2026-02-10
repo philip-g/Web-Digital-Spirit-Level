@@ -77,8 +77,9 @@ function handleOrientation(event) {
     const angleDeg = angleRad * 180 / Math.PI;
 
 
+    const horizonAngle = Math.atan2(rotatedVector[0], rotatedVector[1]) * 180 / Math.PI;
 
-    updateUI(angleDeg);
+    updateUI(horizonAngle);
 }
 
 
