@@ -1,3 +1,11 @@
 
-create-pages:
-  pages: true
+pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - cp -r * public
+  artifacts:
+    paths:
+      - public
+  only:
+    - main
