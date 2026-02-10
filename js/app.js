@@ -49,16 +49,25 @@ function handleOrientation(event) {
     gBeta = SMOOTHING * alpha + (1 - SMOOTHING) * gBeta;
     gGamma = SMOOTHING * gamma + (1 - SMOOTHING) * gGamma;
 
-  // --- Convert to radians ---
-  const betaRad  = beta  * Math.PI / 180;
-  const gammaRad = gamma * Math.PI / 180;
+//   // --- Convert to radians ---
+//   const betaRad  = beta  * Math.PI / 180;
+//   const gammaRad = gamma * Math.PI / 180;
 
-  // --- Compute screen-space gravity vector ---
-  const gx = -Math.sin(betaRad);
-  const gy = Math.sin(gammaRad) * Math.cos(betaRad);
+//   // --- Compute screen-space gravity vector ---
+//   const gx = -Math.sin(betaRad);
+//   const gy = Math.sin(gammaRad) * Math.cos(betaRad);
 
-  // --- Horizon angle in degrees ---
-  let horizonAngle = Math.atan2(gx, gy) * 180 / Math.PI;
+    // Compute the tilt vector
+    // screenX = gamma
+    // screenY = beta
+    const x = Math.sin(gammaRad);
+    const y = -Math.sin(betaRad);
+
+    // Angle of the horizon line
+    let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
+
+    // // --- Horizon angle in degrees ---
+    // let horizonAngle = Math.atan2(gx, gy) * 180 / Math.PI;
 
 //   // --- Smooth the angle ---
 //   smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
