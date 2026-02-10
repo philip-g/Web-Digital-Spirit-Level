@@ -2,8 +2,8 @@
 let videoStream = null;
 
 // Smoothed gravity vector
-let gBeta = 0;
-let gGamma = 0;
+let betaSmoothed = 0;
+let gammaSmoothed = 0;
 const SMOOTHING = 1; // 0.1 = very stable, 0.8 = more responsive
 
 // --- CAMERA ---
@@ -46,12 +46,12 @@ function handleOrientation(event) {
   $("#gamma").text(gamma.toFixed(1));
 
     // Smooth beta and gamma
-    gBeta = SMOOTHING * alpha + (1 - SMOOTHING) * gBeta;
-    gGamma = SMOOTHING * gamma + (1 - SMOOTHING) * gGamma;
+    betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
+    gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
 //   // --- Convert to radians ---
-//   const betaRad  = beta  * Math.PI / 180;
-//   const gammaRad = gamma * Math.PI / 180;
+  const betaRad  = betaSmoothed  * Math.PI / 180;
+  const gammaRad = gammaSmoothed * Math.PI / 180;
 
 //   // --- Compute screen-space gravity vector ---
 //   const gx = -Math.sin(betaRad);
@@ -72,7 +72,7 @@ function handleOrientation(event) {
 //   // --- Smooth the angle ---
 //   smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
 
-  updateUI(30.1);
+  updateUI(horizonAngle);
 }
 
 
