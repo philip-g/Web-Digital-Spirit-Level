@@ -50,15 +50,22 @@ function handleOrientation(event) {
     gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
     // Convert to radians
-    const betaRad  = betaSmoothed  * Math.PI / 180;
-    const gammaRad = gammaSmoothed * Math.PI / 180;
+    // const betaRad  = betaSmoothed  * Math.PI / 180;
+    // const gammaRad = gammaSmoothed * Math.PI / 180;
 
-    // Compute screen-space gravity vector
-    const x = -Math.sin(betaRad);
-    const y = Math.sin(gammaRad) * Math.cos(betaRad);
+    // // Compute screen-space gravity vector
+    // const x = -Math.sin(betaRad);
+    // const y = Math.sin(gammaRad) * Math.cos(betaRad);
 
-    // Angle of the horizon line
-    let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
+    // // Angle of the horizon line
+    // let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
+
+    if (Math.abs(betaSmoothed) < 90) {
+        updateUI(gammaSmoothed);
+    }
+    else {
+        updateUI(-gammaSmoothed);
+    }
 
   updateUI(gammaSmoothed);
 }
