@@ -3,7 +3,7 @@ let videoStream = null;
 let currentAngle = 0;
 
 let smoothedAngle = 0;
-const SMOOTHING = 0.15;
+const SMOOTHING = 0.015;
 
 
 // --- CAMERA ---
@@ -51,19 +51,20 @@ function handleOrientation(event) {
   updateUI(smoothedAngle);
 }
 
-function updateUI() {
+function updateUI(angle) {
   $("#level-line").css(
     "transform",
-    `rotate(${currentAngle}deg)`
+    `rotate(${angle}deg)`
   );
 
   $("#angle-display").text(
-    `${currentAngle.toFixed(1)}°`
+    `${angle.toFixed(1)}°`
   );
 
-  // Change color when close to level
-  if (Math.abs(currentAngle) < 1) {
+  // Visual feedback when level
+  if (Math.abs(angle) < 1) {
     $("#level-line").css("background", "cyan");
+    navigator.vibrate?.(20);
   } else {
     $("#level-line").css("background", "lime");
   }
