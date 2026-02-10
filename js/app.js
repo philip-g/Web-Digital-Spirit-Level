@@ -2,9 +2,10 @@
 let videoStream = null;
 let currentAngle = 0;
 
-let smoothedAngle = 0;
-const SMOOTHING = 0.015;
-
+// Smoothed gravity vector
+let gBeta = 0;
+let gGamma = 0;
+const SMOOTHING = 0.1; // 0.05 = very stable, 0.2 = more responsive
 
 // --- CAMERA ---
 
@@ -34,31 +35,26 @@ function stopCamera() {
 // --- ORIENTATION ---
 
 function handleOrientation(event) {
-  const alpha = event.alpha; // compass
-  const beta  = event.beta;  // front-back
-  const gamma = event.gamma; // left-right
+  const alpha = event.alpha;
+  const beta  = event.beta;
+  const gamma = event.gamma;
 
-  if (
-    alpha === null ||
-    beta === null ||
-    gamma === null
-  ) return;
+  if (beta === null || gamma === null) return;
 
   // --- DEBUG DISPLAY ---
-  $("#alpha").text(alpha.toFixed(1));
+  $("#alpha").text(alpha?.toFixed(1) ?? "–");
   $("#beta").text(beta.toFixed(1));
   $("#gamma").text(gamma.toFixed(1));
 
-  // --- HORIZON ANGLE ---
-  const rawAngle =
-    Math.atan2(gamma, beta) * (180 / Math.PI);
+  // --- SMOOTH THE GRAVITY VECTOR ---
+  gBeta  = SMOOTHING * beta  + (1 - SMOOTHING) * gBeta;
+  gGamma = SMOOTHING * gamma + (1 - SMOOTHING) * gGamma;
 
-  // --- EXPONENTIAL SMOOTHING ---
-  smoothedAngle =
-    SMOOTHING * rawAngle +
-    (1 - SMOOTHING) * smoothedAngle;
+  // --- COMPUTE PERFECTLY CONTINUOUS HORIZON ANGLE ---
+  const angle =
+    Math.atan2(gGamma, gBeta) * (180 / Math.PI);
 
-  updateUI(smoothedAngle);
+  updateUI(angle);
 }
 
 
