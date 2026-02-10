@@ -71,7 +71,7 @@ function handleOrientation(event) {
     // // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
 
 
-    let rotatedVector = rotateZXY([1, 0, 0], alphaSmoothed, betaSmoothed, gammaSmoothed);
+    let rotatedVector = rotateZXY([0, 1, 0], alphaSmoothed, betaSmoothed, gammaSmoothed);
     
     const angleRad = Math.atan2(rotatedVector[2], Math.sqrt(rotatedVector[0]*rotatedVector[0] + rotatedVector[1]*rotatedVector[1]));
     const angleDeg = angleRad * 180 / Math.PI;
