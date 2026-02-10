@@ -45,6 +45,10 @@ function handleOrientation(event) {
   $("#beta").text(beta.toFixed(1));
   $("#gamma").text(gamma.toFixed(1));
 
+    // Smooth beta and gamma
+    gBeta = SMOOTHING * alpha + (1 - SMOOTHING) * gBeta;
+    gGamma = SMOOTHING * gamma + (1 - SMOOTHING) * gGamma;
+
   // --- Convert to radians ---
   const betaRad  = beta  * Math.PI / 180;
   const gammaRad = gamma * Math.PI / 180;
@@ -56,10 +60,10 @@ function handleOrientation(event) {
   // --- Horizon angle in degrees ---
   let horizonAngle = Math.atan2(gx, gy) * 180 / Math.PI;
 
-  // --- Smooth the angle ---
-  smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
+//   // --- Smooth the angle ---
+//   smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
 
-  updateUI(smoothedAngle);
+  updateUI(horizonAngle);
 }
 
 
