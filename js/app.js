@@ -72,7 +72,7 @@ function handleOrientation(event) {
 //   // --- Smooth the angle ---
 //   smoothedAngle = SMOOTHING * horizonAngle + (1 - SMOOTHING) * smoothedAngle;
 
-  updateUI(horizonAngle);
+  updateUI(90);
 }
 
 
