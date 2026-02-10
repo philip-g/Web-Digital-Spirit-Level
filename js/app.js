@@ -40,34 +40,31 @@ function handleOrientation(event) {
 
   if (alpha === null || beta === null || gamma === null) return;
 
-  // DEBUG
+  // --- DEBUG PANEL ---
   $("#alpha").text(alpha.toFixed(1));
   $("#beta").text(beta.toFixed(1));
   $("#gamma").text(gamma.toFixed(1));
 
-    // Smooth beta and gamma
-    betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
-    gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
+  // --- Convert Euler angles to quaternion (Z-X-Y order) ---
+  const q = glMatrix.quat.create();
+  glMatrix.quat.fromEuler(q, beta, gamma, alpha);
 
-    // Convert to radians
-    // const betaRad  = betaSmoothed  * Math.PI / 180;
-    // const gammaRad = gammaSmoothed * Math.PI / 180;
+  // --- Rotate world gravity vector (0,0,-1) by quaternion ---
+  const gravity = glMatrix.vec3.fromValues(0, 0, -1);
+  const deviceGravity = glMatrix.vec3.create();
+  glMatrix.vec3.transformQuat(deviceGravity, gravity, q);
 
-    // // Compute screen-space gravity vector
-    // const x = -Math.sin(betaRad);
-    // const y = Math.sin(gammaRad) * Math.cos(betaRad);
+  // --- Project onto screen plane ---
+  const gx = deviceGravity[0]; // left/right
+  const gy = deviceGravity[1]; // up/down
 
-    // // Angle of the horizon line
-    // let horizonAngle = Math.atan2(x, y) * 180 / Math.PI;
+  // --- Horizon angle ---
+  const angle = Math.atan2(gx, gy) * 180 / Math.PI;
 
-    if (Math.abs(betaSmoothed) < 90) {
-        updateUI(gammaSmoothed);
-    }
-    else {
-        updateUI(-gammaSmoothed);
-    }
+  // --- Smooth angle with EWMA ---
+  smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
 
-  updateUI(gammaSmoothed);
+  updateUI(smoothedAngle);
 }
 
 
@@ -126,3 +123,4 @@ $(document).ready(function () {
   $("#debug-panel").toggle(this.checked);
 });
 });
+
