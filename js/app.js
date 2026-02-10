@@ -78,7 +78,7 @@ function handleOrientation(event) {
 
 
 
-    updateUI(angleDeg);
+    updateUI(betaSmoothed);
 }
 
 
