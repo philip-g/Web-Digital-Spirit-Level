@@ -34,22 +34,33 @@ function stopCamera() {
 // --- ORIENTATION ---
 
 function handleOrientation(event) {
-  const beta = event.beta;   // front-back
+  const alpha = event.alpha; // compass
+  const beta  = event.beta;  // front-back
   const gamma = event.gamma; // left-right
 
-  if (beta === null || gamma === null) return;
+  if (
+    alpha === null ||
+    beta === null ||
+    gamma === null
+  ) return;
 
-  // Compute stable horizon angle
-  let rawAngle =
+  // --- DEBUG DISPLAY ---
+  $("#alpha").text(alpha.toFixed(1));
+  $("#beta").text(beta.toFixed(1));
+  $("#gamma").text(gamma.toFixed(1));
+
+  // --- HORIZON ANGLE ---
+  const rawAngle =
     Math.atan2(gamma, beta) * (180 / Math.PI);
 
-  // Exponential smoothing
+  // --- EXPONENTIAL SMOOTHING ---
   smoothedAngle =
     SMOOTHING * rawAngle +
     (1 - SMOOTHING) * smoothedAngle;
 
   updateUI(smoothedAngle);
 }
+
 
 function updateUI(angle) {
   $("#level-line").css(
@@ -101,4 +112,8 @@ $(document).ready(function () {
   } else {
     window.addEventListener("deviceorientation", handleOrientation);
   }
+
+  $("#debugToggle").on("change", function () {
+  $("#debug-panel").toggle(this.checked);
+});
 });

@@ -21,9 +21,6 @@
   <!-- Header -->
   <header class="text-center py-3">
     <h1 class="h4">Digital Spirit Level</h1>
-    <p class="small text-secondary mb-0">
-      Uses DeviceOrientation & Camera API
-    </p>
   </header>
 
   <!-- Main view -->
@@ -37,9 +34,16 @@
       <div id="overlay">
         <div id="level-line"></div>
         <div id="angle-display">0°</div>
+        <div id="debug-panel">
+            <div>α (alpha): <span id="alpha">0</span>°</div>
+            <div>β (beta): <span id="beta">0</span>°</div>
+            <div>γ (gamma): <span id="gamma">0</span>°</div>
+        </div>
       </div>
 
     </div>
+
+    <input type="checkbox" id="debugToggle" checked> Debug
   </main>
 
   <!-- Controls -->

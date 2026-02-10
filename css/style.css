@@ -52,3 +52,21 @@ html, body {
   padding: 6px 14px;
   border-radius: 20px;
 }
+
+#debug-panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 8px 10px;
+  border-radius: 8px;
+  line-height: 1.4;
+}
+
+#debug-panel span {
+  font-weight: bold;
+  display: inline-block;
+  min-width: 45px;
+  text-align: right;
+}
