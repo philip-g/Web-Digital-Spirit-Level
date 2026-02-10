@@ -36,7 +36,7 @@ function handleOrientation(event) {
   const gamma = event.gamma;
 
   // Use gamma for horizontal leveling
-  currentAngle = gamma;
+  currentAngle = event.beta;
 
   updateUI();
 }
