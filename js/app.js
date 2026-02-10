@@ -2,9 +2,10 @@
 let videoStream = null;
 
 // Smoothed gravity vector
+let alphaSmoothed = 0;
 let betaSmoothed = 0;
 let gammaSmoothed = 0;
-const SMOOTHING = 1; // 0.1 = very stable, 0.8 = more responsive
+const SMOOTHING = 0.9; // 0.1 = very stable, 0.8 = more responsive
 
 // --- CAMERA ---
 
@@ -34,37 +35,42 @@ function stopCamera() {
 // --- ORIENTATION ---
 
 function handleOrientation(event) {
-  const alpha = event.alpha;
-  const beta  = event.beta;
-  const gamma = event.gamma;
+    const alpha = event.alpha;
+    const beta  = event.beta;
+    const gamma = event.gamma;
 
-  if (alpha === null || beta === null || gamma === null) return;
+    if (alpha === null || beta === null || gamma === null) return;
 
-  // --- DEBUG PANEL ---
-  $("#alpha").text(alpha.toFixed(1));
-  $("#beta").text(beta.toFixed(1));
-  $("#gamma").text(gamma.toFixed(1));
+    // --- DEBUG PANEL ---
+    $("#alpha").text(alpha.toFixed(1));
+    $("#beta").text(beta.toFixed(1));
+    $("#gamma").text(gamma.toFixed(1));
 
-  // --- Convert Euler angles to quaternion (Z-X-Y order) ---
-  const q = glMatrix.quat.create();
-  glMatrix.quat.fromEuler(q, beta, gamma, alpha);
+    // Smooth angle sensor values
+    alphaSmoothed = SMOOTHING * alpha + (1 - SMOOTHING) * alphaSmoothed;
+    betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
+    gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
-  // --- Rotate world gravity vector (0,0,-1) by quaternion ---
-  const gravity = glMatrix.vec3.fromValues(0, 0, -1);
-  const deviceGravity = glMatrix.vec3.create();
-  glMatrix.vec3.transformQuat(deviceGravity, gravity, q);
+    // --- Convert Euler angles to quaternion (Z-X-Y order) ---
+    const q = glMatrix.quat.create();
+    glMatrix.quat.fromEuler(q, betaSmoothed, gammaSmoothed, alphaSmoothed);
 
-  // --- Project onto screen plane ---
-  const gx = deviceGravity[0]; // left/right
-  const gy = deviceGravity[1]; // up/down
+    // --- Rotate world gravity vector (0,0,-1) by quaternion ---
+    const gravity = glMatrix.vec3.fromValues(0, 0, -1);
+    const deviceGravity = glMatrix.vec3.create();
+    glMatrix.vec3.transformQuat(deviceGravity, gravity, q);
 
-  // --- Horizon angle ---
-  const angle = Math.atan2(gx, gy) * 180 / Math.PI;
+    // --- Project onto screen plane ---
+    const gx = deviceGravity[0]; // left/right
+    const gy = deviceGravity[1]; // up/down
 
-  // --- Smooth angle with EWMA ---
-  smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
+    // --- Horizon angle ---
+    const angle = Math.atan2(gx, gy) * 180 / Math.PI;
 
-  updateUI(smoothedAngle);
+    // --- Smooth angle with EWMA ---
+    // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
+
+    updateUI(angle);
 }
 
 
