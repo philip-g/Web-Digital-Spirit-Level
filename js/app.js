@@ -71,14 +71,14 @@ function handleOrientation(event) {
     // // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
 
 
-    let rotatedVector = rotateZXY([0, 0, -1], alphaSmoothed, betaSmoothed, gammaSmoothed);
+    let rotatedVector = rotateYZX([0, 0, -1], alphaSmoothed, betaSmoothed, gammaSmoothed);
     
     const angleRad = Math.atan2(rotatedVector[2], Math.sqrt(rotatedVector[0]*rotatedVector[0] + rotatedVector[1]*rotatedVector[1]));
     const angleDeg = angleRad * 180 / Math.PI;
 
 
 
-    updateUI(betaSmoothed);
+    updateUI(angleDeg);
 }
 
 
@@ -141,30 +141,47 @@ $(document).ready(function () {
 
 function deg2rad(d) { return d * Math.PI / 180; }
 
-function rotateZXY(v, alpha, beta, gamma) {
-  const a = deg2rad(alpha);
-  const b = deg2rad(beta);
-  const g = deg2rad(gamma);
+function rotateYZX(v, alpha, beta, gamma) {
+    const a = deg2rad(alpha);
+    const b = deg2rad(beta);
+    const g = deg2rad(gamma);
 
-  const cA = Math.cos(a), sA = Math.sin(a);
-  const cB = Math.cos(b), sB = Math.sin(b);
-  const cG = Math.cos(g), sG = Math.sin(g);
+    const cA = Math.cos(a), sA = Math.sin(a);
+    const cB = Math.cos(b), sB = Math.sin(b);
+    const cG = Math.cos(g), sG = Math.sin(g);
 
-  // Z rotation
-  const x1 = cA*v[0] - sA*v[1];
-  const y1 = sA*v[0] + cA*v[1];
-  const z1 = v[2];
+    // Y rotation
+    const x1 = cG*v[0] + sG*v[2];
+    const y1 = v[1];
+    const z1 = -sG*v[0] + cG*v[2];
 
-  // X rotation
-  const x2 = x1;
-  const y2 = cB*y1 - sB*z1;
-  const z2 = sB*y1 + cB*z1;
+    // Z rotation
+    const x2 = cA*x1 - sA*y1;
+    const y2 = sA*x1 + cA*y1;
+    const z2 = z1;
 
-  // Y rotation
-  const x3 = cG*x2 + sG*z2;
-  const y3 = y2;
-  const z3 = -sG*x2 + cG*z2;
+    // X rotation
+    const x3 = x2;
+    const y3 = cB*y2 - sB*z2;
+    const z3 = sB*y2 + cB*z2;
 
-  return [x3, y3, z3];
+
+
+    // // Z rotation
+    // const x1 = cA*v[0] - sA*v[1];
+    // const y1 = sA*v[0] + cA*v[1];
+    // const z1 = v[2];
+
+    // // X rotation
+    // const x2 = x1;
+    // const y2 = cB*y1 - sB*z1;
+    // const z2 = sB*y1 + cB*z1;
+
+    // // Y rotation
+    // const x3 = cG*x2 + sG*z2;
+    // const y3 = y2;
+    // const z3 = -sG*x2 + cG*z2;
+
+    return [x3, y3, z3];
 }
 
