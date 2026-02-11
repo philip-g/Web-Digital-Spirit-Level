@@ -49,7 +49,7 @@ function handleOrientation(event) {
   const gravity = [0, 0, -1];
   const g = rotateZXY(gravity, alpha, beta, gamma);
 
-let roll = Math.atan2(g[0], -g[2]) * 180 / Math.PI;
+let roll = Math.atan2(g[0], g[1]) * 180 / Math.PI;
 
 const screenAngle = window.screen.orientation.angle;
 
