@@ -49,10 +49,17 @@ function handleOrientation(event) {
   const gravity = [0, 0, -1];
   const g = rotateZXY(gravity, alpha, beta, gamma);
 
-  const roll = Math.atan2(g[0], -g[2]) * 180 / Math.PI;
+let roll = Math.atan2(g[0], -g[2]) * 180 / Math.PI;
 
-  updateUI(roll);
-}
+const screenAngle = window.screen.orientation.angle;
+
+// Compensate for screen rotation
+roll -= screenAngle;
+
+// Normalize
+roll = ((roll + 180) % 360) - 180;
+
+updateUI(roll);}
 
 
 function updateUI(angle) {
