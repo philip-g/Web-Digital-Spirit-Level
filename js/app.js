@@ -47,9 +47,9 @@ function handleOrientation(event) {
     $("#gamma").text(gamma.toFixed(1));
 
     // Smooth angle sensor values
-    alphaSmoothed = SMOOTHING * alpha + (1 - SMOOTHING) * alphaSmoothed;
-    betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
-    gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
+    // alphaSmoothed = SMOOTHING * alpha + (1 - SMOOTHING) * alphaSmoothed;
+    // betaSmoothed = SMOOTHING * beta + (1 - SMOOTHING) * betaSmoothed;
+    // gammaSmoothed = SMOOTHING * gamma + (1 - SMOOTHING) * gammaSmoothed;
 
     // --- Convert Euler angles to quaternion (Z-X-Y order) ---
     // const q = glMatrix.quat.create();
@@ -70,16 +70,20 @@ function handleOrientation(event) {
     // // --- Smooth angle with EWMA ---
     // // smoothedAngle = SMOOTHING * angle + (1 - SMOOTHING) * smoothedAngle;
 
+    // gx =  sin(gamma)
+    // gy = -sin(beta) * cos(gamma)
+    // gz = -cos(beta) * cos(gamma)
 
-    let rotatedVector = rotateYZX([0, 0, -1], alphaSmoothed, betaSmoothed, gammaSmoothed);
+
+    // let rotatedVector = rotateYZX([0, 0, -1], alphaSmoothed, betaSmoothed, gammaSmoothed);
     
-    const angleRad = Math.atan2(rotatedVector[2], Math.sqrt(rotatedVector[0]*rotatedVector[0] + rotatedVector[1]*rotatedVector[1]));
-    const angleDeg = angleRad * 180 / Math.PI;
+    // const angleRad = Math.atan2(rotatedVector[2], Math.sqrt(rotatedVector[0]*rotatedVector[0] + rotatedVector[1]*rotatedVector[1]));
+    // const angleDeg = angleRad * 180 / Math.PI;
 
 
-    const horizonAngle = Math.atan2(rotatedVector[0], rotatedVector[1]) * 180 / Math.PI;
+    // const horizonAngle = Math.atan2(rotatedVector[0], rotatedVector[1]) * 180 / Math.PI;
 
-    updateUI(horizonAngle);
+    updateUI(getRoll(beta, gamma));
 }
 
 
@@ -151,38 +155,50 @@ function rotateYZX(v, alpha, beta, gamma) {
     const cB = Math.cos(b), sB = Math.sin(b);
     const cG = Math.cos(g), sG = Math.sin(g);
 
-    // Y rotation
-    const x1 = cG*v[0] + sG*v[2];
-    const y1 = v[1];
-    const z1 = -sG*v[0] + cG*v[2];
-
-    // Z rotation
-    const x2 = cA*x1 - sA*y1;
-    const y2 = sA*x1 + cA*y1;
-    const z2 = z1;
-
-    // X rotation
-    const x3 = x2;
-    const y3 = cB*y2 - sB*z2;
-    const z3 = sB*y2 + cB*z2;
-
-
+    // YZX order
+    // // Y rotation
+    // const x1 = cG*v[0] + sG*v[2];
+    // const y1 = v[1];
+    // const z1 = -sG*v[0] + cG*v[2];
 
     // // Z rotation
-    // const x1 = cA*v[0] - sA*v[1];
-    // const y1 = sA*v[0] + cA*v[1];
-    // const z1 = v[2];
+    // const x2 = cA*x1 - sA*y1;
+    // const y2 = sA*x1 + cA*y1;
+    // const z2 = z1;
 
     // // X rotation
-    // const x2 = x1;
-    // const y2 = cB*y1 - sB*z1;
-    // const z2 = sB*y1 + cB*z1;
+    // const x3 = x2;
+    // const y3 = cB*y2 - sB*z2;
+    // const z3 = sB*y2 + cB*z2;
 
-    // // Y rotation
-    // const x3 = cG*x2 + sG*z2;
-    // const y3 = y2;
-    // const z3 = -sG*x2 + cG*z2;
+
+    // ZXY order
+    // Z rotation
+    const x1 = cA*v[0] - sA*v[1];
+    const y1 = sA*v[0] + cA*v[1];
+    const z1 = v[2];
+
+    // X rotation
+    const x2 = x1;
+    const y2 = cB*y1 - sB*z1;
+    const z2 = sB*y1 + cB*z1;
+
+    // Y rotation
+    const x3 = cG*x2 + sG*z2;
+    const y3 = y2;
+    const z3 = -sG*x2 + cG*z2;
 
     return [x3, y3, z3];
 }
 
+function getRoll(beta, gamma) {
+    const b = beta  * Math.PI / 180;
+    const g = gamma * Math.PI / 180;
+
+    const roll = Math.atan2(
+        Math.sin(g),
+        Math.cos(g) * Math.cos(b)
+    );
+
+    return roll * 180 / Math.PI;
+}
