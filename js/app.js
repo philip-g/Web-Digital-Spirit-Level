@@ -83,13 +83,10 @@ function handleOrientation(event) {
 
     // const horizonAngle = Math.atan2(rotatedVector[0], rotatedVector[1]) * 180 / Math.PI;
 
-    const rotated = rotateYZX([0, 0, -1], alpha, beta, gamma);
+    const gravity = [0, 0, -1];
+    const g = rotateZXY(gravity, alpha, beta, gamma);
 
-    const gx = rotated[0];
-    const gz = rotated[2];
-    
-    const roll = Math.atan2(gx, -gz) * 180 / Math.PI;
-
+    const roll = Math.atan2(g[0], -g[2]) * 180 / Math.PI;
     updateUI(roll);
 }
 
@@ -153,7 +150,7 @@ $(document).ready(function () {
 
 function deg2rad(d) { return d * Math.PI / 180; }
 
-function rotateYZX(v, alpha, beta, gamma) {
+function rotateZXY(v, alpha, beta, gamma) {
     const a = deg2rad(alpha);
     const b = deg2rad(beta);
     const g = deg2rad(gamma);

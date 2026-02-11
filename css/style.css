@@ -1,72 +1,133 @@
-
 html, body {
   margin: 0;
   padding: 0;
-}
-
-#viewport {
-  position: relative;
-  width: 100%;
-  max-width: 420px;
-  aspect-ratio: 9 / 16;
+  height: 100%;
   background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: hidden;
-  border-radius: 12px;
 }
 
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* Camera fullscreen */
 #camera {
   position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: none;
 }
 
+/* Overlay */
 #overlay {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-/* Level line */
+/* LEVEL LINE */
 #level-line {
   position: absolute;
   top: 50%;
   left: 10%;
   width: 80%;
-  height: 2px;
-  background: lime;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #00ff88 20%,
+    #00ff88 80%,
+    transparent 100%
+  );
   transform-origin: center;
-  box-shadow: 0 0 10px rgba(0,255,0,0.8);
+  box-shadow: 0 0 15px rgba(0,255,150,0.8);
+  transition: background 0.2s ease;
 }
 
 /* Angle display */
 #angle-display {
   position: absolute;
-  bottom: 20px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 1.5rem;
-  font-weight: bold;
-  background: rgba(0,0,0,0.5);
-  padding: 6px 14px;
-  border-radius: 20px;
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: white;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  padding: 10px 20px;
+  border-radius: 30px;
+  letter-spacing: 1px;
 }
 
+/* Debug panel */
 #debug-panel {
   position: absolute;
-  top: 12px;
-  left: 12px;
-  font-size: 0.8rem;
-  background: rgba(0, 0, 0, 0.55);
-  padding: 8px 10px;
-  border-radius: 8px;
-  line-height: 1.4;
+  top: 20px;
+  left: 20px;
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(10px);
+  padding: 12px 16px;
+  border-radius: 14px;
+  line-height: 1.6;
+  color: #ccc;
 }
 
-#debug-panel span {
-  font-weight: bold;
-  display: inline-block;
-  min-width: 45px;
-  text-align: right;
+/* Controls container */
+#controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+/* Modern switch style */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  width: 42px;
+  height: 22px;
+  background: #444;
+  border-radius: 20px;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+}
+
+.switch input:checked + .slider {
+  background: #00ff88;
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(20px);
 }
