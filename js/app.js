@@ -83,7 +83,14 @@ function handleOrientation(event) {
 
     // const horizonAngle = Math.atan2(rotatedVector[0], rotatedVector[1]) * 180 / Math.PI;
 
-    updateUI(getRoll(beta, gamma));
+    const rotated = rotateYZX([0, 0, -1], alpha, beta, gamma);
+
+    const gx = rotated[0];
+    const gz = rotated[2];
+    
+    const roll = Math.atan2(gx, -gz) * 180 / Math.PI;
+
+    updateUI(roll);
 }
 
 
