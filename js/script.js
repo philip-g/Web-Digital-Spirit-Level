@@ -31,7 +31,7 @@ const SMOOTHING_FACTOR = 0.1; // Lower = more smoothing (0.1-0.3 typical)
 
 // Throttle angle display updates
 let lastDisplayUpdate = 0;
-const DISPLAY_UPDATE_INTERVAL = 200; // ms
+const DISPLAY_UPDATE_INTERVAL = 500; // ms
 
 // Camera toggle
 cameraToggle.addEventListener('click', async () => {
