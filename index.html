@@ -75,7 +75,7 @@
             // Calculate roll angle from gravity vector in screen plane
             // atan2(x, y) gives us the angle of the "down" direction
             // Negative to counter-rotate and keep line horizontal
-            const roll = Math.atan2(gravity.x, gravity.y) * RAD_TO_DEG;
+            const roll = -Math.atan2(gravity.x, gravity.y) * RAD_TO_DEG;
             
             line.style.transform = `rotate(${roll}deg)`;
             
