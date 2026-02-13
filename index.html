@@ -72,7 +72,7 @@
             // This gives us the proper compensation for 3D rotation
             const roll = Math.atan2(
                 Math.sin(gamma * DEG_TO_RAD),
-                Math.sin(beta * DEG_TO_RAD)
+                Math.abs(Math.sin(beta * DEG_TO_RAD))
             ) * RAD_TO_DEG;
             
             // Apply negative rotation to keep line horizontal
