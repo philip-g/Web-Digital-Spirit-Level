@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" width=device-width, initial-scale=1.0">
     <title>Horizontal Line - Gyroscope</title>
     <style>
         * {
@@ -40,6 +40,30 @@
             opacity: 0.7;
         }
         
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 15px;
+            font-size: 12px;
+            background: #2a2a3e;
+            color: #fff;
+            border: 1px solid #00f5ff;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        
+        .btn.active {
+            background: #00f5ff;
+            color: #000;
+        }
+        
         .permission-btn {
             padding: 15px 30px;
             font-size: 16px;
@@ -54,43 +78,69 @@
 <body>
     <div class="line" id="line"></div>
     <div class="info" id="info">Initializing...</div>
+    <div class="controls" id="controls" style="display: none;">
+        <button class="btn active" data-mode="0">atan2(y, x)</button>
+        <button class="btn" data-mode="1">atan2(x, y)</button>
+        <button class="btn" data-mode="2">atan2(-y, -x)</button>
+        <button class="btn" data-mode="3">atan2(-x, -y)</button>
+    </div>
     <button class="permission-btn" id="permissionBtn" style="display: none;">Enable Sensors</button>
 
     <script>
         const line = document.getElementById('line');
         const info = document.getElementById('info');
         const permissionBtn = document.getElementById('permissionBtn');
+        const controls = document.getElementById('controls');
         
         const RAD_TO_DEG = 180 / Math.PI;
+        let currentMode = 0;
+        
+        // Add click handlers for mode buttons
+        controls.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                controls.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentMode = parseInt(btn.dataset.mode);
+            });
+        });
         
         function handleMotion(event) {
-            // Use gravity vector from accelerometer
-            // This avoids gimbal lock entirely
             const gravity = event.accelerationIncludingGravity;
             
             if (!gravity || gravity.x === null || gravity.y === null) {
                 return;
             }
             
-            // Calculate roll angle from gravity vector in screen plane
-            // atan2(x, y) gives us the angle of the "down" direction
-            // Negative to counter-rotate and keep line horizontal
-            const roll = -Math.atan2(gravity.x, gravity.y) * RAD_TO_DEG;
+            const x = gravity.x;
+            const y = gravity.y;
+            
+            let roll;
+            switch(currentMode) {
+                case 0:
+                    roll = Math.atan2(y, x) * RAD_TO_DEG;
+                    break;
+                case 1:
+                    roll = Math.atan2(x, y) * RAD_TO_DEG;
+                    break;
+                case 2:
+                    roll = Math.atan2(-y, -x) * RAD_TO_DEG;
+                    break;
+                case 3:
+                    roll = Math.atan2(-x, -y) * RAD_TO_DEG;
+                    break;
+            }
             
             line.style.transform = `rotate(${roll}deg)`;
             
-            // Update debug info
-            info.textContent = `x: ${gravity.x?.toFixed(2)} | y: ${gravity.y?.toFixed(2)} | roll: ${roll.toFixed(1)}°`;
+            info.textContent = `x: ${x.toFixed(2)} | y: ${y.toFixed(2)} | roll: ${roll.toFixed(1)}°`;
         }
         
         async function init() {
-            // Check if DeviceMotionEvent is supported
             if (!window.DeviceMotionEvent) {
                 info.textContent = 'Device motion not supported';
                 return;
             }
             
-            // iOS 13+ requires permission
             if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 permissionBtn.style.display = 'block';
                 permissionBtn.onclick = async () => {
@@ -99,6 +149,7 @@
                         if (permission === 'granted') {
                             window.addEventListener('devicemotion', handleMotion);
                             permissionBtn.style.display = 'none';
+                            controls.style.display = 'flex';
                             info.textContent = 'Tilt your device...';
                         } else {
                             info.textContent = 'Permission denied';
@@ -108,8 +159,8 @@
                     }
                 };
             } else {
-                // Non-iOS or older iOS
                 window.addEventListener('devicemotion', handleMotion);
+                controls.style.display = 'flex';
                 info.textContent = 'Tilt your device...';
             }
         }
