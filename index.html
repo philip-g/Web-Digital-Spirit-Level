@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Horizontal Line - Gyroscope</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <video id="camera" autoplay playsinline></video>
@@ -16,7 +16,13 @@
     <div class="info" id="info">Initializing...</div>
     
     <div class="controls">
-        <button class="btn" id="cameraToggle">📷 Camera Off</button>
+        <div class="toggle-container">
+            <label class="toggle-label">Camera</label>
+            <label class="toggle-switch">
+                <input type="checkbox" id="cameraToggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
         <button class="btn" id="calibrateToggle">🎯 Calibrate</button>
     </div>
     
@@ -28,6 +34,6 @@
         <button id="calibrateBtn">Calibrate</button>
     </div>
 
-    <script src="js/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
