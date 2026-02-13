@@ -69,7 +69,12 @@ function handleMotion(event) {
     }
     
     // Default: atan2(x, y)
-    const roll = Math.atan2(gx, gy) * RAD_TO_DEG;
+    let roll = Math.atan2(gx, gy) * RAD_TO_DEG;
+    
+    // Adjust for screen orientation
+    const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+    const screenAngle = orientation ? orientation.angle : 0;
+    roll = roll - screenAngle;
     
     // Update line rotation
     line.style.transform = `translate(-50%, -50%) rotate(${roll}deg)`;
