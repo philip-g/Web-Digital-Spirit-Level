@@ -1,133 +1,161 @@
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: #000;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  overflow: hidden;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-#app {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: #1a1a2e;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    position: relative;
 }
 
-/* Camera fullscreen */
 #camera {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+    z-index: 1;
+    display: none;
 }
 
-/* Overlay */
-#overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+#camera.active {
+    display: block;
 }
 
-/* LEVEL LINE */
-#level-line {
-  position: absolute;
-  top: 50%;
-  left: 10%;
-  width: 80%;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    #00ff88 20%,
-    #00ff88 80%,
-    transparent 100%
-  );
-  transform-origin: center;
-  box-shadow: 0 0 15px rgba(0,255,150,0.8);
-  transition: background 0.2s ease;
+.line {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 4px;
+    background: linear-gradient(90deg, #00f5ff, #00ff88);
+    box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    transition: transform 0.05s linear;
+    border-radius: 2px;
+    z-index: 10;
 }
 
-/* Angle display */
-#angle-display {
-  position: absolute;
-  bottom: max(70px, env(safe-area-inset-bottom) + 40px);
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2.2rem;
-  font-weight: 600;
-  color: white;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(10px);
-  padding: 10px 22px;
-  border-radius: 30px;
-  letter-spacing: 1px;
-}
-/* Debug panel */
-#debug-panel {
-  position: absolute;
-  display: none;
-  top: 20px;
-  left: 20px;
-  font-size: 0.9rem;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(10px);
-  padding: 12px 16px;
-  border-radius: 14px;
-  line-height: 1.6;
-  color: #ccc;
+.angle-display {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 48px;
+    font-weight: bold;
+    color: #00f5ff;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8),
+                 0 0 20px rgba(0, 245, 255, 0.5);
+    z-index: 10;
+    font-variant-numeric: tabular-nums;
 }
 
-/* Controls container */
-#controls {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  pointer-events: auto;
+.info {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    color: #fff;
+    font-size: 14px;
+    opacity: 0.7;
+    max-width: 90%;
+    z-index: 10;
+    text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Modern switch style */
-.switch {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: white;
-  font-size: 0.9rem;
+.controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
 }
 
-.switch input {
-  display: none;
+.btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    background: rgba(42, 42, 62, 0.9);
+    color: #fff;
+    border: 1px solid #00f5ff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
 }
 
-.slider {
-  width: 42px;
-  height: 22px;
-  background: #444;
-  border-radius: 20px;
-  position: relative;
-  transition: background 0.2s ease;
+.btn:hover {
+    background: rgba(0, 245, 255, 0.2);
 }
 
-.slider::before {
-  content: "";
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  background: white;
-  border-radius: 50%;
-  top: 2px;
-  left: 2px;
-  transition: transform 0.2s ease;
+.btn:active {
+    transform: scale(0.95);
 }
 
-.switch input:checked + .slider {
-  background: #00ff88;
+.permission-btn {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 15px 30px;
+    font-size: 16px;
+    background: #00f5ff;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 100;
 }
 
-.switch input:checked + .slider::before {
-  transform: translateX(20px);
+.calibration {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    color: white;
+    display: none;
+    z-index: 100;
+    border: 2px solid #00f5ff;
+}
+
+.calibration.active {
+    display: block;
+}
+
+.calibration h2 {
+    margin-bottom: 20px;
+    color: #00f5ff;
+}
+
+.calibration p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+.calibration button {
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 14px;
+    background: #00f5ff;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.calibration button:active {
+    transform: scale(0.95);
 }

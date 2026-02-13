@@ -1,150 +1,200 @@
+const camera = document.getElementById('camera');
+const line = document.getElementById('line');
+const angleDisplay = document.getElementById('angleDisplay');
+const info = document.getElementById('info');
+const permissionBtn = document.getElementById('permissionBtn');
+const cameraToggle = document.getElementById('cameraToggle');
+const calibrateToggle = document.getElementById('calibrateToggle');
+const calibration = document.getElementById('calibration');
+const calibrateBtn = document.getElementById('calibrateBtn');
 
-let videoStream = null;
+const RAD_TO_DEG = 180 / Math.PI;
 
-// Smoothed gravity vector
-let alphaSmoothed = 0;
-let betaSmoothed = 0;
-let gammaSmoothed = 0;
-const SMOOTHING = 0.2; // 0.1 = very stable, 0.8 = more responsive
+// State
+let cameraActive = false;
+let cameraStream = null;
+let calibrated = false;
+let xSign = 1;
+let ySign = 1;
+let swapXY = false;
 
-// --- CAMERA ---
-
-async function startCamera() {
-  try {
-    videoStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "environment" },
-      audio: false
-    });
-
-    $("#camera")
-      .prop("srcObject", videoStream)
-      .fadeIn();
-  } catch (err) {
-    alert("Camera access denied or unavailable.");
-  }
-}
-
-function stopCamera() {
-  if (videoStream) {
-    videoStream.getTracks().forEach(track => track.stop());
-    videoStream = null;
-  }
-  $("#camera").fadeOut();
-}
-
-// --- ORIENTATION ---
-
-function handleOrientation(event) {
-  const alpha = event.alpha;
-  const beta  = event.beta;
-  const gamma = event.gamma;
-
-  if (alpha === null || beta === null || gamma === null) return;
-
-  // --- DEBUG PANEL ---
-  $("#alpha").text(alpha.toFixed(1));
-  $("#beta").text(beta.toFixed(1));
-  $("#gamma").text(gamma.toFixed(1));
-
-  const gravity = [0, 0, -1];
-  const g = rotateZXY(gravity, alpha, beta, gamma);
-
-let roll = Math.atan2(g[0], g[1]) * 180 / Math.PI;
-
-const screenAngle = window.screen.orientation.angle;
-
-// Compensate for screen rotation
-roll -= screenAngle;
-
-// Normalize
-roll = ((roll + 180) % 360) - 180;
-
-updateUI(roll);}
-
-
-function updateUI(angle) {
-  $("#level-line").css(
-    "transform",
-    `rotate(${angle}deg)`
-  );
-
-  $("#angle-display").text(
-    `${angle.toFixed(1)}°`
-  );
-
-  // Visual feedback when level
-  if (Math.abs(angle) < 1) {
-    $("#level-line").css("background", "cyan");
-    navigator.vibrate?.(20);
-  } else {
-    $("#level-line").css("background", "lime");
-  }
-}
-
-// --- EVENTS ---
-
-$(document).ready(function () {
-
-  // Camera toggle
-  $("#cameraToggle").on("change", function () {
-    if (this.checked) {
-      startCamera();
+// Camera toggle
+cameraToggle.addEventListener('click', async () => {
+    if (!cameraActive) {
+        try {
+            cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: 'environment' } 
+            });
+            camera.srcObject = cameraStream;
+            camera.classList.add('active');
+            cameraActive = true;
+            cameraToggle.textContent = '📷 Camera On';
+        } catch (error) {
+            info.textContent = 'Camera error: ' + error.message;
+        }
     } else {
-      stopCamera();
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+        }
+        camera.classList.remove('active');
+        cameraActive = false;
+        cameraToggle.textContent = '📷 Camera Off';
     }
-  });
-
-  // Request motion permission (iOS)
-  if (
-    typeof DeviceOrientationEvent !== "undefined" &&
-    typeof DeviceOrientationEvent.requestPermission === "function"
-  ) {
-    const btn = $("<button class='btn btn-outline-light btn-sm mt-2'>Enable Sensors</button>");
-    $("footer").append("<br>").append(btn);
-
-    btn.on("click", async () => {
-      const response = await DeviceOrientationEvent.requestPermission();
-      if (response === "granted") {
-        window.addEventListener("deviceorientation", handleOrientation);
-        btn.remove();
-      }
-    });
-  } else {
-    window.addEventListener("deviceorientation", handleOrientation);
-  }
-
-  $("#debugToggle").on("change", function () {
-    $("#debug-panel").toggle(this.checked);
-  });
 });
 
+// Calibrate toggle
+calibrateToggle.addEventListener('click', () => {
+    calibration.classList.add('active');
+});
 
-function deg2rad(d) { return d * Math.PI / 180; }
-
-function rotateZXY(v, alpha, beta, gamma) {
-  const a = deg2rad(alpha);
-  const b = deg2rad(beta);
-  const g = deg2rad(gamma);
-
-  const cA = Math.cos(a), sA = Math.sin(a);
-  const cB = Math.cos(b), sB = Math.sin(b);
-  const cG = Math.cos(g), sG = Math.sin(g);
-
-  // ZXY order
-  // Z rotation
-  const x1 = cA*v[0] - sA*v[1];
-  const y1 = sA*v[0] + cA*v[1];
-  const z1 = v[2];
-
-  // X rotation
-  const x2 = x1;
-  const y2 = cB*y1 - sB*z1;
-  const z2 = sB*y1 + cB*z1;
-
-  // Y rotation
-  const x3 = cG*x2 + sG*z2;
-  const y3 = y2;
-  const z3 = -sG*x2 + cG*z2;
-
-  return [x3, y3, z3];
+// Motion handler
+function handleMotion(event) {
+    const gravity = event.accelerationIncludingGravity;
+    
+    if (!gravity || gravity.x === null || gravity.y === null) {
+        return;
+    }
+    
+    let gx = gravity.x;
+    let gy = gravity.y;
+    
+    // Apply calibration if calibrated
+    if (calibrated) {
+        gx = gravity.x * xSign;
+        gy = gravity.y * ySign;
+        
+        if (swapXY) {
+            [gx, gy] = [gy, gx];
+        }
+    }
+    
+    // Default: atan2(x, y)
+    const roll = Math.atan2(gx, gy) * RAD_TO_DEG;
+    
+    // Update line rotation
+    line.style.transform = `translate(-50%, -50%) rotate(${roll}deg)`;
+    
+    // Update angle display
+    angleDisplay.textContent = `${roll.toFixed(1)}°`;
+    
+    // Update info (optional debug)
+    // info.textContent = `x: ${gravity.x.toFixed(2)} | y: ${gravity.y.toFixed(2)} | roll: ${roll.toFixed(1)}°`;
 }
+
+// Calibration
+function calibrate() {
+    const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+    const angle = orientation ? orientation.angle : 0;
+    
+    info.textContent = `Screen angle: ${angle}° - Calibrating...`;
+    
+    const samples = [];
+    let sampleCount = 0;
+    const maxSamples = 10;
+    
+    const sampleHandler = (event) => {
+        const gravity = event.accelerationIncludingGravity;
+        if (!gravity || gravity.x === null || gravity.y === null) return;
+        
+        samples.push({ x: gravity.x, y: gravity.y, z: gravity.z });
+        sampleCount++;
+        
+        if (sampleCount >= maxSamples) {
+            window.removeEventListener('devicemotion', sampleHandler);
+            
+            // Average the samples
+            const avgX = samples.reduce((sum, s) => sum + s.x, 0) / samples.length;
+            const avgY = samples.reduce((sum, s) => sum + s.y, 0) / samples.length;
+            const avgZ = samples.reduce((sum, s) => sum + s.z, 0) / samples.length;
+            
+            // Determine mapping based on screen orientation
+            switch(angle) {
+                case 0: // Portrait
+                    if (Math.abs(avgY) > Math.abs(avgX)) {
+                        swapXY = false;
+                        xSign = 1;
+                        ySign = avgY > 0 ? 1 : -1;
+                    } else {
+                        swapXY = true;
+                        xSign = avgX > 0 ? 1 : -1;
+                        ySign = 1;
+                    }
+                    break;
+                case 90: // Landscape right
+                    if (Math.abs(avgX) > Math.abs(avgY)) {
+                        swapXY = false;
+                        xSign = avgX > 0 ? -1 : 1;
+                        ySign = 1;
+                    } else {
+                        swapXY = true;
+                        xSign = 1;
+                        ySign = avgY > 0 ? -1 : 1;
+                    }
+                    break;
+                case 180: // Portrait upside down
+                    if (Math.abs(avgY) > Math.abs(avgX)) {
+                        swapXY = false;
+                        xSign = 1;
+                        ySign = avgY > 0 ? -1 : 1;
+                    } else {
+                        swapXY = true;
+                        xSign = avgX > 0 ? -1 : 1;
+                        ySign = 1;
+                    }
+                    break;
+                case 270: // Landscape left
+                    if (Math.abs(avgX) > Math.abs(avgY)) {
+                        swapXY = false;
+                        xSign = avgX > 0 ? 1 : -1;
+                        ySign = 1;
+                    } else {
+                        swapXY = true;
+                        xSign = 1;
+                        ySign = avgY > 0 ? 1 : -1;
+                    }
+                    break;
+            }
+            
+            calibrated = true;
+            calibration.classList.remove('active');
+            info.textContent = `Calibrated! (swap: ${swapXY}, xSign: ${xSign}, ySign: ${ySign})`;
+        }
+    };
+    
+    window.addEventListener('devicemotion', sampleHandler);
+}
+
+calibrateBtn.addEventListener('click', calibrate);
+
+// Initialize
+async function init() {
+    if (!window.DeviceMotionEvent) {
+        info.textContent = 'Device motion not supported';
+        return;
+    }
+    
+    // iOS 13+ requires permission
+    if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        permissionBtn.style.display = 'block';
+        permissionBtn.onclick = async () => {
+            try {
+                const permission = await DeviceMotionEvent.requestPermission();
+                if (permission === 'granted') {
+                    window.addEventListener('devicemotion', handleMotion);
+                    permissionBtn.style.display = 'none';
+                    info.textContent = 'Sensors enabled';
+                } else {
+                    info.textContent = 'Permission denied';
+                }
+            } catch (error) {
+                info.textContent = 'Error: ' + error.message;
+            }
+        };
+    } else {
+        // Non-iOS or older iOS
+        window.addEventListener('devicemotion', handleMotion);
+        info.textContent = 'Ready';
+    }
+}
+
+init();
