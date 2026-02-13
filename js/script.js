@@ -71,10 +71,21 @@ function handleMotion(event) {
     // Default: atan2(x, y)
     let roll = Math.atan2(gx, gy) * RAD_TO_DEG;
     
-    // Adjust for screen orientation
+    // Adjust for screen orientation mode (not physical holding)
     const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
-    const screenAngle = orientation ? orientation.angle : 0;
-    roll = roll - screenAngle;
+    if (orientation) {
+        const orientationType = orientation.type || '';
+        
+        // Adjust based on whether screen is in portrait or landscape mode
+        if (orientationType.includes('landscape-primary')) {
+            roll = roll - 90;
+        } else if (orientationType.includes('landscape-secondary')) {
+            roll = roll + 90;
+        } else if (orientationType.includes('portrait-secondary')) {
+            roll = roll - 180;
+        }
+        // portrait-primary needs no adjustment
+    }
     
     // Update line rotation
     line.style.transform = `translate(-50%, -50%) rotate(${roll}deg)`;
@@ -83,7 +94,7 @@ function handleMotion(event) {
     angleDisplay.textContent = `${roll.toFixed(1)}°`;
     
     // Update info (optional debug)
-    // info.textContent = `x: ${gravity.x.toFixed(2)} | y: ${gravity.y.toFixed(2)} | roll: ${roll.toFixed(1)}°`;
+    // info.textContent = `x: ${gravity.x.toFixed(2)} | y: ${gravity.y.toFixed(2)} | type: ${orientation?.type}`;
 }
 
 // Calibration
