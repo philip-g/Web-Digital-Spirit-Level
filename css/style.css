@@ -29,24 +29,32 @@ body {
 }
 
 .line {
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    transition: transform 0.05s linear;
     z-index: 10;
+    transition: opacity 0.3s ease;
 }
 
 .line.horizontal {
-    width: 80vw;
+    width: 130vmax;
     height: 4px;
     border-radius: 2px;
+    margin-left: -65vmax;
+    margin-top: -2px;
 }
 
 .line.vertical {
     width: 4px;
-    height: 80vh;
+    height: 130vmax;
     border-radius: 2px;
+    margin-left: -2px;
+    margin-top: -65vmax;
+}
+
+.line.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 /* Color states based on level accuracy */
@@ -61,8 +69,8 @@ body {
 }
 
 .line.level-off {
-    background: linear-gradient(90deg, #00f5ff, #00ff88);
-    box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+    background: linear-gradient(90deg, #ff0000, #ff4444);
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
 }
 
 .angle-display {

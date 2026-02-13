@@ -6,6 +6,7 @@ const info = document.getElementById('info');
 const permissionBtn = document.getElementById('permissionBtn');
 const cameraToggle = document.getElementById('cameraToggle');
 const calibrateToggle = document.getElementById('calibrateToggle');
+const modeToggle = document.getElementById('modeToggle');
 const calibration = document.getElementById('calibration');
 const calibrateBtn = document.getElementById('calibrateBtn');
 const errorScreen = document.getElementById('errorScreen');
@@ -20,6 +21,9 @@ let xSign = 1;
 let ySign = 1;
 let swapXY = false;
 let motionDetected = false;
+
+// Display mode: 'horizontal', 'vertical', 'cross'
+let displayMode = 'cross';
 
 // EWMA smoothing
 let smoothedRoll = 0;
@@ -48,6 +52,37 @@ cameraToggle.addEventListener('click', async () => {
         cameraToggle.textContent = '📷 Camera Off';
     }
 });
+
+// Mode toggle
+modeToggle.addEventListener('click', () => {
+    if (displayMode === 'cross') {
+        displayMode = 'horizontal';
+        modeToggle.textContent = '— Horizontal';
+        updateLineVisibility();
+    } else if (displayMode === 'horizontal') {
+        displayMode = 'vertical';
+        modeToggle.textContent = '| Vertical';
+        updateLineVisibility();
+    } else {
+        displayMode = 'cross';
+        modeToggle.textContent = '➕ Cross';
+        updateLineVisibility();
+    }
+});
+
+// Update line visibility based on mode
+function updateLineVisibility() {
+    if (displayMode === 'horizontal') {
+        lineHorizontal.classList.remove('hidden');
+        lineVertical.classList.add('hidden');
+    } else if (displayMode === 'vertical') {
+        lineHorizontal.classList.add('hidden');
+        lineVertical.classList.remove('hidden');
+    } else { // cross
+        lineHorizontal.classList.remove('hidden');
+        lineVertical.classList.remove('hidden');
+    }
+}
 
 // Calibrate toggle
 calibrateToggle.addEventListener('click', () => {
@@ -103,11 +138,11 @@ function handleMotion(event) {
     // Apply EWMA smoothing
     smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
     
-    // Update horizontal line rotation
-    lineHorizontal.style.transform = `translate(-50%, -50%) rotate(${smoothedRoll}deg)`;
+    // Update horizontal line rotation (margins handle centering)
+    lineHorizontal.style.transform = `rotate(${smoothedRoll}deg)`;
     
-    // Update vertical line rotation (90 degrees offset from horizontal)
-    lineVertical.style.transform = `translate(-50%, -50%) rotate(${smoothedRoll}deg)`;
+    // Update vertical line rotation (margins handle centering)
+    lineVertical.style.transform = `rotate(${smoothedRoll}deg)`;
     
     // Update color based on how level it is
     const absAngle = Math.abs(smoothedRoll);
@@ -118,12 +153,18 @@ function handleMotion(event) {
     } else if (absAngle <= 5) {
         colorClass = 'level-good'; // Yellow - within 5 degrees
     } else {
-        colorClass = 'level-off'; // Default cyan
+        colorClass = 'level-off'; // Red - beyond 5 degrees
     }
     
-    // Apply color class to both lines
+    // Apply color class to both lines (preserve hidden class if set)
+    const horizontalHidden = lineHorizontal.classList.contains('hidden');
+    const verticalHidden = lineVertical.classList.contains('hidden');
+    
     lineHorizontal.className = `line horizontal ${colorClass}`;
     lineVertical.className = `line vertical ${colorClass}`;
+    
+    if (horizontalHidden) lineHorizontal.classList.add('hidden');
+    if (verticalHidden) lineVertical.classList.add('hidden');
     
     // Update angle display
     angleDisplay.textContent = `${smoothedRoll.toFixed(1)}°`;
