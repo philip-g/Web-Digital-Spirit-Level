@@ -177,17 +177,18 @@ function handleMotion(event) {
     // Apply EWMA smoothing
     smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
     
-    // Calculate required line length to maintain consistent margin
-    const lineLength = getLineLength(smoothedRoll);
+    // Calculate required line lengths separately (vertical is 90° offset from horizontal)
+    const horizontalLength = getLineLength(smoothedRoll);
+    const verticalLength = getLineLength(smoothedRoll + 90);
     
     // Update horizontal line
-    lineHorizontal.style.width = `${lineLength}px`;
-    lineHorizontal.style.marginLeft = `${-lineLength / 2}px`;
+    lineHorizontal.style.width = `${horizontalLength}px`;
+    lineHorizontal.style.marginLeft = `${-horizontalLength / 2}px`;
     lineHorizontal.style.transform = `rotate(${smoothedRoll}deg)`;
     
     // Update vertical line
-    lineVertical.style.height = `${lineLength}px`;
-    lineVertical.style.marginTop = `${-lineLength / 2}px`;
+    lineVertical.style.height = `${verticalLength}px`;
+    lineVertical.style.marginTop = `${-verticalLength / 2}px`;
     lineVertical.style.transform = `rotate(${smoothedRoll}deg)`;
     
     // Update color based on how level it is
