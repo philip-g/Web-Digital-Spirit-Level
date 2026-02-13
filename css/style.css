@@ -122,7 +122,8 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #1a1a2e;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
     display: none;
     justify-content: center;
     align-items: center;
@@ -135,27 +136,30 @@ body {
 
 .error-content {
     text-align: center;
-    padding: 40px;
-    max-width: 500px;
+    padding: 50px 40px;
+    max-width: 450px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
 }
 
 .error-icon {
-    font-size: 64px;
+    font-size: 80px;
     margin-bottom: 20px;
 }
 
 .error-content h2 {
-    color: #00f5ff;
+    color: #1a1a2e;
     font-size: 28px;
     margin-bottom: 20px;
+    font-weight: 700;
 }
 
 .error-content p {
-    color: #fff;
+    color: #333;
     font-size: 16px;
     line-height: 1.6;
     margin-bottom: 15px;
-    opacity: 0.9;
 }
 
 .calibration {
