@@ -116,6 +116,48 @@ body {
     z-index: 100;
 }
 
+.error-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #1a1a2e;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.error-screen.active {
+    display: flex;
+}
+
+.error-content {
+    text-align: center;
+    padding: 40px;
+    max-width: 500px;
+}
+
+.error-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+}
+
+.error-content h2 {
+    color: #00f5ff;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.error-content p {
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
 .calibration {
     position: fixed;
     top: 50%;

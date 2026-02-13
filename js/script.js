@@ -7,6 +7,7 @@ const cameraToggle = document.getElementById('cameraToggle');
 const calibrateToggle = document.getElementById('calibrateToggle');
 const calibration = document.getElementById('calibration');
 const calibrateBtn = document.getElementById('calibrateBtn');
+const errorScreen = document.getElementById('errorScreen');
 
 const RAD_TO_DEG = 180 / Math.PI;
 
@@ -17,6 +18,7 @@ let calibrated = false;
 let xSign = 1;
 let ySign = 1;
 let swapXY = false;
+let motionDetected = false;
 
 // Camera toggle
 cameraToggle.addEventListener('click', async () => {
@@ -53,6 +55,12 @@ function handleMotion(event) {
     
     if (!gravity || gravity.x === null || gravity.y === null) {
         return;
+    }
+    
+    // Mark that we've received valid motion data
+    if (!motionDetected) {
+        motionDetected = true;
+        info.textContent = 'Motion sensor detected';
     }
     
     let gx = gravity.x;
@@ -184,8 +192,9 @@ calibrateBtn.addEventListener('click', calibrate);
 
 // Initialize
 async function init() {
+    // Check if DeviceMotionEvent is supported
     if (!window.DeviceMotionEvent) {
-        info.textContent = 'Device motion not supported';
+        errorScreen.classList.add('active');
         return;
     }
     
@@ -198,7 +207,15 @@ async function init() {
                 if (permission === 'granted') {
                     window.addEventListener('devicemotion', handleMotion);
                     permissionBtn.style.display = 'none';
-                    info.textContent = 'Sensors enabled';
+                    info.textContent = 'Waiting for motion data...';
+                    
+                    // Check if motion sensor is actually working
+                    setTimeout(() => {
+                        if (!motionDetected) {
+                            errorScreen.classList.add('active');
+                            info.textContent = 'No motion sensor detected';
+                        }
+                    }, 3000);
                 } else {
                     info.textContent = 'Permission denied';
                 }
@@ -209,7 +226,15 @@ async function init() {
     } else {
         // Non-iOS or older iOS
         window.addEventListener('devicemotion', handleMotion);
-        info.textContent = 'Ready';
+        info.textContent = 'Waiting for motion data...';
+        
+        // Check if motion sensor is actually working
+        setTimeout(() => {
+            if (!motionDetected) {
+                errorScreen.classList.add('active');
+                info.textContent = 'No motion sensor detected';
+            }
+        }, 3000);
     }
 }
 
