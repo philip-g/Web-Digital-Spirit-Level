@@ -1,63 +1,119 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Digital Spirit Level</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- Bootstrap -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
-
-  <link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizontal Line - Gyroscope</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        
+        .line {
+            width: 80vw;
+            height: 4px;
+            background: linear-gradient(90deg, #00f5ff, #00ff88);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+            transition: transform 0.05s linear;
+            border-radius: 2px;
+        }
+        
+        .info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #fff;
+            font-size: 14px;
+            opacity: 0.7;
+        }
+        
+        .permission-btn {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #00f5ff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <div class="line" id="line"></div>
+    <div class="info" id="info">Initializing...</div>
+    <button class="permission-btn" id="permissionBtn" style="display: none;">Enable Sensors</button>
 
-<div id="app">
-
-  <video id="camera" autoplay playsinline></video>
-
-  <div id="overlay">
-    <div id="level-line"></div>
-
-    <div id="angle-display">0°</div>
-
-    <div id="debug-panel">
-      <div>α: <span id="alpha">0</span>°</div>
-      <div>β: <span id="beta">0</span>°</div>
-      <div>γ: <span id="gamma">0</span>°</div>
-    </div>
-
-    <div id="controls">
-      <label class="switch">
-        <input type="checkbox" id="cameraToggle">
-        <span class="slider"></span>
-        <span class="label-text">Camera</span>
-      </label>
-
-      <label class="switch">
-        <input type="checkbox" id="debugToggle">
-        <span class="slider"></span>
-        <span class="label-text">Debug</span>
-      </label>
-    </div>
-
-  </div>
-
-</div>
-
-<!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<!-- gl-matrix library -->
-<script src="https://cdn.jsdelivr.net/npm/gl-matrix@3.4.3/gl-matrix-min.js"></script>
-
-<script src="js/app.js"></script>
+    <script>
+        const line = document.getElementById('line');
+        const info = document.getElementById('info');
+        const permissionBtn = document.getElementById('permissionBtn');
+        
+        const DEG_TO_RAD = Math.PI / 180;
+        const RAD_TO_DEG = 180 / Math.PI;
+        
+        function handleOrientation(event) {
+            const beta = event.beta;   // front-to-back tilt (-180 to 180)
+            const gamma = event.gamma; // left-to-right tilt (-90 to 90)
+            
+            // Calculate the roll angle (rotation around z-axis)
+            // This gives us the proper compensation for 3D rotation
+            const roll = Math.atan2(
+                Math.sin(gamma * DEG_TO_RAD),
+                Math.sin(beta * DEG_TO_RAD)
+            ) * RAD_TO_DEG;
+            
+            // Apply negative rotation to keep line horizontal
+            line.style.transform = `rotate(${-roll}deg)`;
+            
+            // Update debug info
+            info.textContent = `β: ${beta?.toFixed(1)}° | γ: ${gamma?.toFixed(1)}° | roll: ${roll.toFixed(1)}°`;
+        }
+        
+        async function init() {
+            // Check if DeviceOrientationEvent is supported
+            if (!window.DeviceOrientationEvent) {
+                info.textContent = 'Device orientation not supported';
+                return;
+            }
+            
+            // iOS 13+ requires permission
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                permissionBtn.style.display = 'block';
+                permissionBtn.onclick = async () => {
+                    try {
+                        const permission = await DeviceOrientationEvent.requestPermission();
+                        if (permission === 'granted') {
+                            window.addEventListener('deviceorientation', handleOrientation);
+                            permissionBtn.style.display = 'none';
+                            info.textContent = 'Tilt your device...';
+                        } else {
+                            info.textContent = 'Permission denied';
+                        }
+                    } catch (error) {
+                        info.textContent = 'Error: ' + error.message;
+                    }
+                };
+            } else {
+                // Non-iOS or older iOS
+                window.addEventListener('deviceorientation', handleOrientation);
+                info.textContent = 'Tilt your device...';
+            }
+        }
+        
+        init();
+    </script>
 </body>
 </html>
