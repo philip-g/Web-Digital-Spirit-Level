@@ -27,7 +27,11 @@ let lineMode = 'horizontal';
 
 // EWMA smoothing
 let smoothedRoll = 0;
-const SMOOTHING_FACTOR = 0.2; // Lower = more smoothing (0.1-0.3 typical)
+const SMOOTHING_FACTOR = 0.1; // Lower = more smoothing (0.1-0.3 typical)
+
+// Throttle angle display updates
+let lastDisplayUpdate = 0;
+const DISPLAY_UPDATE_INTERVAL = 200; // ms
 
 // Camera toggle
 cameraToggle.addEventListener('click', async () => {
@@ -208,8 +212,12 @@ function handleMotion(event) {
     if (horizontalHidden) lineHorizontal.classList.add('hidden');
     if (verticalHidden) lineVertical.classList.add('hidden');
     
-    // Update angle display
-    angleDisplay.textContent = `${smoothedRoll.toFixed(1)}°`;
+    // Update angle display (throttled to improve readability)
+    const now = Date.now();
+    if (now - lastDisplayUpdate >= DISPLAY_UPDATE_INTERVAL) {
+        angleDisplay.textContent = `${smoothedRoll.toFixed(1)}°`;
+        lastDisplayUpdate = now;
+    }
     
     // Update info (optional debug)
     // info.textContent = `x: ${gravity.x.toFixed(2)} | y: ${gravity.y.toFixed(2)} | type: ${orientation?.type}`;
