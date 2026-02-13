@@ -61,42 +61,43 @@
         const info = document.getElementById('info');
         const permissionBtn = document.getElementById('permissionBtn');
         
-        const DEG_TO_RAD = Math.PI / 180;
         const RAD_TO_DEG = 180 / Math.PI;
         
-        function handleOrientation(event) {
-            const beta = event.beta;   // front-to-back tilt (-180 to 180)
-            const gamma = event.gamma; // left-to-right tilt (-90 to 90)
+        function handleMotion(event) {
+            // Use gravity vector from accelerometer
+            // This avoids gimbal lock entirely
+            const gravity = event.accelerationIncludingGravity;
             
-            // Calculate the roll angle (rotation around z-axis)
-            // This gives us the proper compensation for 3D rotation
-            const roll = Math.atan2(
-                Math.sin(gamma * DEG_TO_RAD),
-                Math.abs(Math.sin(beta * DEG_TO_RAD))
-            ) * RAD_TO_DEG;
+            if (!gravity || gravity.x === null || gravity.y === null) {
+                return;
+            }
             
-            // Apply negative rotation to keep line horizontal
-            line.style.transform = `rotate(${-roll}deg)`;
+            // Calculate roll angle from gravity vector in screen plane
+            // atan2(x, y) gives us the angle of the "down" direction
+            // Negative to counter-rotate and keep line horizontal
+            const roll = -Math.atan2(gravity.x, gravity.y) * RAD_TO_DEG;
+            
+            line.style.transform = `rotate(${roll}deg)`;
             
             // Update debug info
-            info.textContent = `β: ${beta?.toFixed(1)}° | γ: ${gamma?.toFixed(1)}° | roll: ${roll.toFixed(1)}°`;
+            info.textContent = `x: ${gravity.x?.toFixed(2)} | y: ${gravity.y?.toFixed(2)} | roll: ${roll.toFixed(1)}°`;
         }
         
         async function init() {
-            // Check if DeviceOrientationEvent is supported
-            if (!window.DeviceOrientationEvent) {
-                info.textContent = 'Device orientation not supported';
+            // Check if DeviceMotionEvent is supported
+            if (!window.DeviceMotionEvent) {
+                info.textContent = 'Device motion not supported';
                 return;
             }
             
             // iOS 13+ requires permission
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            if (typeof DeviceMotionEvent.requestPermission === 'function') {
                 permissionBtn.style.display = 'block';
                 permissionBtn.onclick = async () => {
                     try {
-                        const permission = await DeviceOrientationEvent.requestPermission();
+                        const permission = await DeviceMotionEvent.requestPermission();
                         if (permission === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
+                            window.addEventListener('devicemotion', handleMotion);
                             permissionBtn.style.display = 'none';
                             info.textContent = 'Tilt your device...';
                         } else {
@@ -108,7 +109,7 @@
                 };
             } else {
                 // Non-iOS or older iOS
-                window.addEventListener('deviceorientation', handleOrientation);
+                window.addEventListener('devicemotion', handleMotion);
                 info.textContent = 'Tilt your device...';
             }
         }
