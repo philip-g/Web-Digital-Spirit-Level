@@ -33,13 +33,36 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    transition: transform 0.05s linear;
+    z-index: 10;
+}
+
+.line.horizontal {
     width: 80vw;
     height: 4px;
+    border-radius: 2px;
+}
+
+.line.vertical {
+    width: 4px;
+    height: 80vh;
+    border-radius: 2px;
+}
+
+/* Color states based on level accuracy */
+.line.level-perfect {
+    background: linear-gradient(90deg, #00ff00, #00ff88);
+    box-shadow: 0 0 20px rgba(0, 255, 0, 0.6);
+}
+
+.line.level-good {
+    background: linear-gradient(90deg, #ffff00, #ffdd00);
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.6);
+}
+
+.line.level-off {
     background: linear-gradient(90deg, #00f5ff, #00ff88);
     box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
-    transition: transform 0.05s linear;
-    border-radius: 2px;
-    z-index: 10;
 }
 
 .angle-display {
@@ -137,28 +160,30 @@ body {
 .error-content {
     text-align: center;
     padding: 50px 40px;
-    max-width: 450px;
-    background: #fff;
+    max-width: 500px;
+    margin: 20px;
+    background: #ffffff;
+    border: 3px solid #ff4444;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
 .error-icon {
     font-size: 80px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
 }
 
 .error-content h2 {
-    color: #1a1a2e;
-    font-size: 28px;
-    margin-bottom: 20px;
-    font-weight: 700;
+    color: #ff4444;
+    font-size: 32px;
+    margin-bottom: 25px;
+    font-weight: bold;
 }
 
 .error-content p {
-    color: #333;
-    font-size: 16px;
-    line-height: 1.6;
+    color: #1a1a2e;
+    font-size: 18px;
+    line-height: 1.8;
     margin-bottom: 15px;
 }
 

@@ -1,5 +1,6 @@
 const camera = document.getElementById('camera');
-const line = document.getElementById('line');
+const lineHorizontal = document.getElementById('lineHorizontal');
+const lineVertical = document.getElementById('lineVertical');
 const angleDisplay = document.getElementById('angleDisplay');
 const info = document.getElementById('info');
 const permissionBtn = document.getElementById('permissionBtn');
@@ -19,6 +20,10 @@ let xSign = 1;
 let ySign = 1;
 let swapXY = false;
 let motionDetected = false;
+
+// EWMA smoothing
+let smoothedRoll = 0;
+const SMOOTHING_FACTOR = 0.2; // Lower = more smoothing (0.1-0.3 typical)
 
 // Camera toggle
 cameraToggle.addEventListener('click', async () => {
@@ -95,11 +100,33 @@ function handleMotion(event) {
         // portrait-primary needs no adjustment
     }
     
-    // Update line rotation
-    line.style.transform = `translate(-50%, -50%) rotate(${roll}deg)`;
+    // Apply EWMA smoothing
+    smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
+    
+    // Update horizontal line rotation
+    lineHorizontal.style.transform = `translate(-50%, -50%) rotate(${smoothedRoll}deg)`;
+    
+    // Update vertical line rotation (90 degrees offset from horizontal)
+    lineVertical.style.transform = `translate(-50%, -50%) rotate(${smoothedRoll}deg)`;
+    
+    // Update color based on how level it is
+    const absAngle = Math.abs(smoothedRoll);
+    let colorClass;
+    
+    if (absAngle <= 1) {
+        colorClass = 'level-perfect'; // Green - within 1 degree
+    } else if (absAngle <= 5) {
+        colorClass = 'level-good'; // Yellow - within 5 degrees
+    } else {
+        colorClass = 'level-off'; // Default cyan
+    }
+    
+    // Apply color class to both lines
+    lineHorizontal.className = `line horizontal ${colorClass}`;
+    lineVertical.className = `line vertical ${colorClass}`;
     
     // Update angle display
-    angleDisplay.textContent = `${roll.toFixed(1)}°`;
+    angleDisplay.textContent = `${smoothedRoll.toFixed(1)}°`;
     
     // Update info (optional debug)
     // info.textContent = `x: ${gravity.x.toFixed(2)} | y: ${gravity.y.toFixed(2)} | type: ${orientation?.type}`;
