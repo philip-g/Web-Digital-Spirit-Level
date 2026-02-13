@@ -192,7 +192,7 @@ calibrateBtn.addEventListener('click', calibrate);
 
 // Initialize
 async function init() {
-    // Check if DeviceMotionEvent is supported
+    // Check if DeviceMotionEvent is supported - instant detection
     if (!window.DeviceMotionEvent) {
         errorScreen.classList.add('active');
         return;
@@ -209,13 +209,13 @@ async function init() {
                     permissionBtn.style.display = 'none';
                     info.textContent = 'Waiting for motion data...';
                     
-                    // Check if motion sensor is actually working
+                    // Check if motion sensor is actually working (reduced to 1 second)
                     setTimeout(() => {
                         if (!motionDetected) {
                             errorScreen.classList.add('active');
                             info.textContent = 'No motion sensor detected';
                         }
-                    }, 3000);
+                    }, 1000);
                 } else {
                     info.textContent = 'Permission denied';
                 }
@@ -228,13 +228,13 @@ async function init() {
         window.addEventListener('devicemotion', handleMotion);
         info.textContent = 'Waiting for motion data...';
         
-        // Check if motion sensor is actually working
+        // Check if motion sensor is actually working (reduced to 1 second)
         setTimeout(() => {
             if (!motionDetected) {
                 errorScreen.classList.add('active');
                 info.textContent = 'No motion sensor detected';
             }
-        }, 3000);
+        }, 1000);
     }
 }
 
