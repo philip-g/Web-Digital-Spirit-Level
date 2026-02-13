@@ -37,19 +37,15 @@ body {
 }
 
 .line.horizontal {
-    width: 130vmax;
     height: 4px;
     border-radius: 2px;
-    margin-left: -65vmax;
     margin-top: -2px;
 }
 
 .line.vertical {
     width: 4px;
-    height: 130vmax;
     border-radius: 2px;
     margin-left: -2px;
-    margin-top: -65vmax;
 }
 
 .line.hidden {

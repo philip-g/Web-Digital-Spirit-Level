@@ -22,8 +22,8 @@ let ySign = 1;
 let swapXY = false;
 let motionDetected = false;
 
-// Display mode: 'horizontal', 'vertical', 'cross'
-let displayMode = 'cross';
+// Line display mode: 'horizontal', 'vertical', 'cross'
+let lineMode = 'horizontal';
 
 // EWMA smoothing
 let smoothedRoll = 0;
@@ -55,16 +55,16 @@ cameraToggle.addEventListener('click', async () => {
 
 // Mode toggle
 modeToggle.addEventListener('click', () => {
-    if (displayMode === 'cross') {
-        displayMode = 'horizontal';
+    if (lineMode === 'cross') {
+        lineMode = 'horizontal';
         modeToggle.textContent = '— Horizontal';
         updateLineVisibility();
-    } else if (displayMode === 'horizontal') {
-        displayMode = 'vertical';
+    } else if (lineMode === 'horizontal') {
+        lineMode = 'vertical';
         modeToggle.textContent = '| Vertical';
         updateLineVisibility();
     } else {
-        displayMode = 'cross';
+        lineMode = 'cross';
         modeToggle.textContent = '➕ Cross';
         updateLineVisibility();
     }
@@ -72,16 +72,51 @@ modeToggle.addEventListener('click', () => {
 
 // Update line visibility based on mode
 function updateLineVisibility() {
-    if (displayMode === 'horizontal') {
+    if (lineMode === 'horizontal') {
         lineHorizontal.classList.remove('hidden');
         lineVertical.classList.add('hidden');
-    } else if (displayMode === 'vertical') {
+    } else if (lineMode === 'vertical') {
         lineHorizontal.classList.add('hidden');
         lineVertical.classList.remove('hidden');
     } else { // cross
         lineHorizontal.classList.remove('hidden');
         lineVertical.classList.remove('hidden');
     }
+}
+
+// Initialize with horizontal only
+updateLineVisibility();
+
+// Calculate required line length to maintain consistent margin from edge
+function getLineLength(angleDeg, marginFraction = 0.05) {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    
+    // Convert to radians and normalize
+    const angleRad = (angleDeg % 180) * Math.PI / 180;
+    const absAngle = Math.abs(angleRad);
+    
+    // Calculate cos and sin
+    const cos = Math.abs(Math.cos(absAngle));
+    const sin = Math.abs(Math.sin(absAngle));
+    
+    // Determine distance to nearest edge in the direction of the line
+    let distanceToEdge;
+    if (sin < 0.001) {
+        // Nearly horizontal
+        distanceToEdge = width / 2;
+    } else if (cos < 0.001) {
+        // Nearly vertical
+        distanceToEdge = height / 2;
+    } else {
+        // Check which edge we hit first
+        const distToVerticalEdge = width / (2 * cos);
+        const distToHorizontalEdge = height / (2 * sin);
+        distanceToEdge = Math.min(distToVerticalEdge, distToHorizontalEdge);
+    }
+    
+    // Apply margin and return full length (line extends both directions from center)
+    return distanceToEdge * (1 - marginFraction) * 2;
 }
 
 // Calibrate toggle
@@ -138,10 +173,17 @@ function handleMotion(event) {
     // Apply EWMA smoothing
     smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
     
-    // Update horizontal line rotation (margins handle centering)
+    // Calculate required line length to maintain consistent margin
+    const lineLength = getLineLength(smoothedRoll);
+    
+    // Update horizontal line
+    lineHorizontal.style.width = `${lineLength}px`;
+    lineHorizontal.style.marginLeft = `${-lineLength / 2}px`;
     lineHorizontal.style.transform = `rotate(${smoothedRoll}deg)`;
     
-    // Update vertical line rotation (margins handle centering)
+    // Update vertical line
+    lineVertical.style.height = `${lineLength}px`;
+    lineVertical.style.marginTop = `${-lineLength / 2}px`;
     lineVertical.style.transform = `rotate(${smoothedRoll}deg)`;
     
     // Update color based on how level it is
