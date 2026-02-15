@@ -1,6 +1,8 @@
 const camera = document.getElementById('camera');
 const lineHorizontal = document.getElementById('lineHorizontal');
 const lineVertical = document.getElementById('lineVertical');
+const bubbleLevel = document.getElementById('bubbleLevel');
+const bubble = document.getElementById('bubble');
 const angleDisplay = document.getElementById('angleDisplay');
 const info = document.getElementById('info');
 const permissionBtn = document.getElementById('permissionBtn');
@@ -22,11 +24,13 @@ let ySign = 1;
 let swapXY = false;
 let motionDetected = false;
 
-// Line display mode: 'horizontal', 'vertical', 'cross'
-let lineMode = 'horizontal';
+// Display mode: 'horizontal', 'vertical', 'cross', 'bubble'
+let displayMode = 'horizontal';
 
 // EWMA smoothing
 let smoothedRoll = 0;
+let smoothedX = 0;
+let smoothedY = 0;
 const SMOOTHING_FACTOR = 0.1; // Lower = more smoothing (0.1-0.3 typical)
 
 // Throttle angle display updates
@@ -59,37 +63,48 @@ cameraToggle.addEventListener('click', async () => {
 
 // Mode toggle
 modeToggle.addEventListener('click', () => {
-    if (lineMode === 'cross') {
-        lineMode = 'horizontal';
-        modeToggle.textContent = '— Horizontal';
-        updateLineVisibility();
-    } else if (lineMode === 'horizontal') {
-        lineMode = 'vertical';
+    if (displayMode === 'horizontal') {
+        displayMode = 'vertical';
         modeToggle.textContent = '| Vertical';
-        updateLineVisibility();
-    } else {
-        lineMode = 'cross';
+    } else if (displayMode === 'vertical') {
+        displayMode = 'cross';
         modeToggle.textContent = '➕ Cross';
-        updateLineVisibility();
+    } else if (displayMode === 'cross') {
+        displayMode = 'bubble';
+        modeToggle.textContent = '⭕ Bubble';
+    } else {
+        displayMode = 'horizontal';
+        modeToggle.textContent = '— Horizontal';
     }
+    updateDisplayMode();
 });
 
-// Update line visibility based on mode
-function updateLineVisibility() {
-    if (lineMode === 'horizontal') {
-        lineHorizontal.classList.remove('hidden');
-        lineVertical.classList.add('hidden');
-    } else if (lineMode === 'vertical') {
+// Update display mode (lines or bubble)
+function updateDisplayMode() {
+    if (displayMode === 'bubble') {
+        // Show bubble level, hide lines
+        bubbleLevel.classList.add('active');
         lineHorizontal.classList.add('hidden');
-        lineVertical.classList.remove('hidden');
-    } else { // cross
-        lineHorizontal.classList.remove('hidden');
-        lineVertical.classList.remove('hidden');
+        lineVertical.classList.add('hidden');
+    } else {
+        // Show lines, hide bubble
+        bubbleLevel.classList.remove('active');
+        
+        if (displayMode === 'horizontal') {
+            lineHorizontal.classList.remove('hidden');
+            lineVertical.classList.add('hidden');
+        } else if (displayMode === 'vertical') {
+            lineHorizontal.classList.add('hidden');
+            lineVertical.classList.remove('hidden');
+        } else { // cross
+            lineHorizontal.classList.remove('hidden');
+            lineVertical.classList.remove('hidden');
+        }
     }
 }
 
 // Initialize with horizontal only
-updateLineVisibility();
+updateDisplayMode();
 
 // Calculate required line length to maintain consistent margin from edge
 function getLineLength(angleDeg, marginFraction = 0.05) {
@@ -155,69 +170,112 @@ function handleMotion(event) {
         }
     }
     
-    // Default: atan2(x, y)
-    let roll = Math.atan2(gx, gy) * RAD_TO_DEG;
-    
-    // Adjust for screen orientation mode (not physical holding)
-    const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
-    if (orientation) {
-        const orientationType = orientation.type || '';
+    if (displayMode === 'bubble') {
+        // Bubble level mode - use raw tilt in both directions
+        // Smooth the values
+        smoothedX = SMOOTHING_FACTOR * gx + (1 - SMOOTHING_FACTOR) * smoothedX;
+        smoothedY = SMOOTHING_FACTOR * gy + (1 - SMOOTHING_FACTOR) * smoothedY;
         
-        // Adjust based on whether screen is in portrait or landscape mode
-        if (orientationType.includes('landscape-primary')) {
-            roll = roll - 90;
-        } else if (orientationType.includes('landscape-secondary')) {
-            roll = roll + 90;
-        } else if (orientationType.includes('portrait-secondary')) {
-            roll = roll - 180;
+        // Scale the bubble position (larger multiplier = more sensitive)
+        // Limit to the container radius (140px = half of 280px ring)
+        const maxRadius = 120;
+        const sensitivity = 15; // pixels per m/s²
+        
+        const offsetX = Math.max(-maxRadius, Math.min(maxRadius, smoothedX * sensitivity));
+        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, smoothedY * sensitivity));
+        
+        // Update bubble position
+        bubble.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+        
+        // Calculate distance from center for color feedback
+        const distance = Math.sqrt(offsetX * offsetX + offsetY * offsetY);
+        const distanceInDegrees = distance / sensitivity * (180 / Math.PI) * 0.1; // Approximate conversion
+        
+        // Update bubble color
+        let colorClass;
+        if (distanceInDegrees <= 1) {
+            colorClass = 'level-perfect';
+        } else if (distanceInDegrees <= 5) {
+            colorClass = 'level-good';
+        } else {
+            colorClass = 'level-off';
         }
-        // portrait-primary needs no adjustment
-    }
-    
-    // Apply EWMA smoothing
-    smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
-    
-    // Calculate required line lengths separately (vertical is 90° offset from horizontal)
-    const horizontalLength = getLineLength(smoothedRoll);
-    const verticalLength = getLineLength(smoothedRoll + 90);
-    
-    // Update horizontal line
-    lineHorizontal.style.width = `${horizontalLength}px`;
-    lineHorizontal.style.marginLeft = `${-horizontalLength / 2}px`;
-    lineHorizontal.style.transform = `rotate(${smoothedRoll}deg)`;
-    
-    // Update vertical line
-    lineVertical.style.height = `${verticalLength}px`;
-    lineVertical.style.marginTop = `${-verticalLength / 2}px`;
-    lineVertical.style.transform = `rotate(${smoothedRoll}deg)`;
-    
-    // Update color based on how level it is
-    const absAngle = Math.abs(smoothedRoll);
-    let colorClass;
-    
-    if (absAngle <= 1) {
-        colorClass = 'level-perfect'; // Green - within 1 degree
-    } else if (absAngle <= 5) {
-        colorClass = 'level-good'; // Yellow - within 5 degrees
+        
+        bubble.className = `bubble ${colorClass}`;
+        
+        // Update angle display to show total tilt
+        const now = Date.now();
+        if (now - lastDisplayUpdate >= DISPLAY_UPDATE_INTERVAL) {
+            angleDisplay.textContent = `${distanceInDegrees.toFixed(1)}°`;
+            lastDisplayUpdate = now;
+        }
+        
     } else {
-        colorClass = 'level-off'; // Red - beyond 5 degrees
-    }
-    
-    // Apply color class to both lines (preserve hidden class if set)
-    const horizontalHidden = lineHorizontal.classList.contains('hidden');
-    const verticalHidden = lineVertical.classList.contains('hidden');
-    
-    lineHorizontal.className = `line horizontal ${colorClass}`;
-    lineVertical.className = `line vertical ${colorClass}`;
-    
-    if (horizontalHidden) lineHorizontal.classList.add('hidden');
-    if (verticalHidden) lineVertical.classList.add('hidden');
-    
-    // Update angle display (throttled to improve readability)
-    const now = Date.now();
-    if (now - lastDisplayUpdate >= DISPLAY_UPDATE_INTERVAL) {
-        angleDisplay.textContent = `${(-smoothedRoll).toFixed(1)}°`;
-        lastDisplayUpdate = now;
+        // Line level mode (existing code)
+        // Default: atan2(x, y)
+        let roll = Math.atan2(gx, gy) * RAD_TO_DEG;
+        
+        // Adjust for screen orientation mode (not physical holding)
+        const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+        if (orientation) {
+            const orientationType = orientation.type || '';
+            
+            // Adjust based on whether screen is in portrait or landscape mode
+            if (orientationType.includes('landscape-primary')) {
+                roll = roll - 90;
+            } else if (orientationType.includes('landscape-secondary')) {
+                roll = roll + 90;
+            } else if (orientationType.includes('portrait-secondary')) {
+                roll = roll - 180;
+            }
+            // portrait-primary needs no adjustment
+        }
+        
+        // Apply EWMA smoothing
+        smoothedRoll = SMOOTHING_FACTOR * roll + (1 - SMOOTHING_FACTOR) * smoothedRoll;
+        
+        // Calculate required line lengths separately (vertical is 90° offset from horizontal)
+        const horizontalLength = getLineLength(smoothedRoll);
+        const verticalLength = getLineLength(smoothedRoll + 90);
+        
+        // Update horizontal line
+        lineHorizontal.style.width = `${horizontalLength}px`;
+        lineHorizontal.style.marginLeft = `${-horizontalLength / 2}px`;
+        lineHorizontal.style.transform = `rotate(${smoothedRoll}deg)`;
+        
+        // Update vertical line
+        lineVertical.style.height = `${verticalLength}px`;
+        lineVertical.style.marginTop = `${-verticalLength / 2}px`;
+        lineVertical.style.transform = `rotate(${smoothedRoll}deg)`;
+        
+        // Update color based on how level it is
+        const absAngle = Math.abs(smoothedRoll);
+        let colorClass;
+        
+        if (absAngle <= 1) {
+            colorClass = 'level-perfect'; // Green - within 1 degree
+        } else if (absAngle <= 5) {
+            colorClass = 'level-good'; // Yellow - within 5 degrees
+        } else {
+            colorClass = 'level-off'; // Red - beyond 5 degrees
+        }
+        
+        // Apply color class to both lines (preserve hidden class if set)
+        const horizontalHidden = lineHorizontal.classList.contains('hidden');
+        const verticalHidden = lineVertical.classList.contains('hidden');
+        
+        lineHorizontal.className = `line horizontal ${colorClass}`;
+        lineVertical.className = `line vertical ${colorClass}`;
+        
+        if (horizontalHidden) lineHorizontal.classList.add('hidden');
+        if (verticalHidden) lineVertical.classList.add('hidden');
+        
+        // Update angle display (throttled to improve readability)
+        const now = Date.now();
+        if (now - lastDisplayUpdate >= DISPLAY_UPDATE_INTERVAL) {
+            angleDisplay.textContent = `${smoothedRoll.toFixed(1)}°`;
+            lastDisplayUpdate = now;
+        }
     }
     
     // Update info (optional debug)
