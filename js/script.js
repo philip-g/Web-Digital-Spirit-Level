@@ -210,8 +210,8 @@ function handleMotion(event) {
         // Bubble moves toward HIGH side
         // X: negate because gravity.x is negative when right is high
         // Y: don't negate because CSS Y increases downward, and we want bubble to move down when bottom is high
-        const offsetX = Math.max(-maxRadius, Math.min(maxRadius, smoothedX * sensitivity));
-        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, -smoothedY * sensitivity));
+        const offsetX = -Math.max(-maxRadius, Math.min(maxRadius, -smoothedX * sensitivity));
+        const offsetY = -Math.max(-maxRadius, Math.min(maxRadius, smoothedY * sensitivity));
         
         // Update bubble position
         bubble.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
