@@ -7,33 +7,45 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <!-- Camera video element - full screen background when active -->
     <video id="camera" autoplay playsinline></video>
     
+    <!-- Line level mode elements -->
     <div class="line horizontal" id="lineHorizontal"></div>
     <div class="line vertical" id="lineVertical"></div>
     
+    <!-- Bubble level mode elements -->
     <div class="bubble-level" id="bubbleLevel">
         <div class="bubble-container">
+            <!-- Outer ring shows maximum tolerance zone -->
             <div class="bubble-ring"></div>
+            <!-- Inner ring shows perfect level zone (±1°) -->
             <div class="bubble-ring inner"></div>
+            <!-- The moving bubble that indicates tilt direction -->
             <div class="bubble" id="bubble"></div>
+            <!-- Static crosshairs in bubble level mode -->
             <div class="crosshair-h"></div>
             <div class="crosshair-v"></div>
         </div>
     </div>
     
+    <!-- Angle display at bottom center -->
     <div class="angle-display" id="angleDisplay">0°</div>
     
+    <!-- Debug info display in top left -->
     <div class="info" id="info">Initializing...</div>
     
+    <!-- Control buttons in top right -->
     <div class="controls">
         <button class="btn" id="calibrateToggle">🎯 Calibrate</button>
         <button class="btn" id="cameraToggle">📷 Camera Off</button>
         <button class="btn" id="modeToggle">— Horizontal</button>
     </div>
     
+    <!-- iOS permission button (only shown on iOS 13+) -->
     <button class="permission-btn" id="permissionBtn" style="display: none;">Enable Sensors</button>
     
+    <!-- Error screen for devices without motion sensors -->
     <div class="error-screen" id="errorScreen">
         <div class="error-content">
             <div class="error-icon">⚠️</div>
@@ -43,6 +55,7 @@
         </div>
     </div>
     
+    <!-- Calibration dialog for adjusting sensor mapping -->
     <div class="calibration" id="calibration">
         <h2>Calibration</h2>
         <p>Hold your phone upright in portrait mode,<br>then tap the button below.</p>

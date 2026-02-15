@@ -1,3 +1,7 @@
+/* ========================================
+   RESET AND BASE STYLES
+   ======================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -13,6 +17,10 @@ body {
     position: relative;
 }
 
+/* ========================================
+   CAMERA VIDEO
+   ======================================== */
+
 #camera {
     position: fixed;
     top: 0;
@@ -27,6 +35,10 @@ body {
 #camera.active {
     display: block;
 }
+
+/* ========================================
+   LINE LEVEL MODE
+   ======================================== */
 
 .line {
     position: fixed;
@@ -69,6 +81,11 @@ body {
     box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
 }
 
+/* ========================================
+   BUBBLE LEVEL MODE
+   ======================================== */
+
+/* Bubble level container - hidden by default */
 .bubble-level {
     position: fixed;
     top: 50%;
@@ -82,12 +99,14 @@ body {
     display: block;
 }
 
+/* Container that holds all bubble level elements */
 .bubble-container {
     position: relative;
     width: 300px;
     height: 300px;
 }
 
+/* Outer tolerance ring (280px diameter) */
 .bubble-ring {
     position: absolute;
     top: 50%;
@@ -99,6 +118,7 @@ body {
     border-radius: 50%;
 }
 
+/* Inner "perfect level" ring (60px diameter for ±1° zone) */
 .bubble-ring.inner {
     width: 60px;
     height: 60px;
@@ -106,6 +126,7 @@ body {
     border-width: 2px;
 }
 
+/* Static crosshairs in bubble level mode */
 .crosshair-h, .crosshair-v {
     position: absolute;
     background: rgba(255, 255, 255, 0.3);
@@ -127,6 +148,7 @@ body {
     transform: translateX(-50%);
 }
 
+/* The moving bubble that indicates tilt */
 .bubble {
     position: absolute;
     top: 50%;
@@ -142,6 +164,7 @@ body {
     transition: background 0.2s;
 }
 
+/* Bubble color states based on level accuracy */
 .bubble.level-perfect {
     background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(0, 255, 0, 0.7));
     box-shadow: 0 0 15px rgba(0, 255, 0, 0.8),
@@ -160,6 +183,11 @@ body {
                 inset 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
+/* ========================================
+   UI ELEMENTS
+   ======================================== */
+
+/* Large angle display at bottom center */
 .angle-display {
     position: fixed;
     bottom: 80px;
@@ -174,6 +202,7 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
+/* Debug info display in top left corner */
 .info {
     position: fixed;
     top: 20px;
@@ -186,6 +215,7 @@ body {
     text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
 }
 
+/* Control buttons container in top right */
 .controls {
     position: fixed;
     top: 20px;
@@ -196,6 +226,7 @@ body {
     z-index: 10;
 }
 
+/* Individual control button styling */
 .btn {
     padding: 8px 12px;
     font-size: 12px;
@@ -218,6 +249,10 @@ body {
     transform: scale(0.95);
 }
 
+/* ========================================
+   PERMISSION BUTTON (iOS 13+)
+   ======================================== */
+
 .permission-btn {
     position: fixed;
     top: 50%;
@@ -234,6 +269,11 @@ body {
     z-index: 100;
 }
 
+/* ========================================
+   ERROR SCREEN
+   ======================================== */
+
+/* Full-screen overlay for devices without motion sensors */
 .error-screen {
     position: fixed;
     top: 0;
@@ -252,6 +292,7 @@ body {
     display: flex;
 }
 
+/* Error message popup content */
 .error-content {
     text-align: center;
     padding: 50px 40px;
@@ -282,6 +323,11 @@ body {
     margin-bottom: 15px;
 }
 
+/* ========================================
+   CALIBRATION DIALOG
+   ======================================== */
+
+/* Calibration overlay for sensor adjustment */
 .calibration {
     position: fixed;
     top: 50%;
