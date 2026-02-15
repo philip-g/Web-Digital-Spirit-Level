@@ -183,15 +183,15 @@ function handleMotion(event) {
             
             // Rotate gravity vector based on screen orientation
             if (orientationType.includes('landscape-primary')) {
-                // 90° clockwise: x' = y, y' = -x
-                adjustedX = gy;
-                adjustedY = -gx;
-            } else if (orientationType.includes('landscape-secondary')) {
-                // 270° clockwise (90° counter-clockwise): x' = -y, y' = x
+                // 90° clockwise rotation
                 adjustedX = -gy;
                 adjustedY = gx;
+            } else if (orientationType.includes('landscape-secondary')) {
+                // 270° clockwise (90° counter-clockwise)
+                adjustedX = gy;
+                adjustedY = -gx;
             } else if (orientationType.includes('portrait-secondary')) {
-                // 180°: x' = -x, y' = -y
+                // 180° rotation
                 adjustedX = -gx;
                 adjustedY = -gy;
             }
@@ -207,9 +207,11 @@ function handleMotion(event) {
         const maxRadius = 120;
         const sensitivity = 15; // pixels per m/s²
         
-        // Invert the signs so bubble moves toward the HIGH side
+        // Bubble moves toward HIGH side
+        // X: negate because gravity.x is negative when right is high
+        // Y: don't negate because CSS Y increases downward, and we want bubble to move down when bottom is high
         const offsetX = Math.max(-maxRadius, Math.min(maxRadius, -smoothedX * sensitivity));
-        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, -smoothedY * sensitivity));
+        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, smoothedY * sensitivity));
         
         // Update bubble position
         bubble.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
