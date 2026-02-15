@@ -172,17 +172,44 @@ function handleMotion(event) {
     
     if (displayMode === 'bubble') {
         // Bubble level mode - use raw tilt in both directions
+        
+        // Adjust for screen orientation
+        let adjustedX = gx;
+        let adjustedY = gy;
+        
+        const orientation = screen.orientation || screen.mozOrientation || screen.msOrientation;
+        if (orientation) {
+            const orientationType = orientation.type || '';
+            
+            // Rotate gravity vector based on screen orientation
+            if (orientationType.includes('landscape-primary')) {
+                // 90° clockwise: x' = y, y' = -x
+                adjustedX = gy;
+                adjustedY = -gx;
+            } else if (orientationType.includes('landscape-secondary')) {
+                // 270° clockwise (90° counter-clockwise): x' = -y, y' = x
+                adjustedX = -gy;
+                adjustedY = gx;
+            } else if (orientationType.includes('portrait-secondary')) {
+                // 180°: x' = -x, y' = -y
+                adjustedX = -gx;
+                adjustedY = -gy;
+            }
+            // portrait-primary needs no adjustment
+        }
+        
         // Smooth the values
-        smoothedX = SMOOTHING_FACTOR * gx + (1 - SMOOTHING_FACTOR) * smoothedX;
-        smoothedY = SMOOTHING_FACTOR * gy + (1 - SMOOTHING_FACTOR) * smoothedY;
+        smoothedX = SMOOTHING_FACTOR * adjustedX + (1 - SMOOTHING_FACTOR) * smoothedX;
+        smoothedY = SMOOTHING_FACTOR * adjustedY + (1 - SMOOTHING_FACTOR) * smoothedY;
         
         // Scale the bubble position (larger multiplier = more sensitive)
         // Limit to the container radius (140px = half of 280px ring)
         const maxRadius = 120;
         const sensitivity = 15; // pixels per m/s²
         
-        const offsetX = Math.max(-maxRadius, Math.min(maxRadius, smoothedX * sensitivity));
-        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, smoothedY * sensitivity));
+        // Invert the signs so bubble moves toward the HIGH side
+        const offsetX = Math.max(-maxRadius, Math.min(maxRadius, -smoothedX * sensitivity));
+        const offsetY = Math.max(-maxRadius, Math.min(maxRadius, -smoothedY * sensitivity));
         
         // Update bubble position
         bubble.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
